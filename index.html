@@ -6,9 +6,11 @@
     <title>Jack Doyle | Interactive Resume</title>
     <meta name="description" content="Portfolio of Jack Doyle - CS & AI Undergraduate, Developer, Cybersecurity.">
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
 
     <style>
         :root {
@@ -41,11 +43,9 @@
             align-items: center;
             justify-content: center;
             overflow-x: hidden;
-            /* Ensure footer doesn't overlap on small screens */
             padding-bottom: 40px; 
         }
 
-        /* --- LAYOUT --- */
         .hud-container {
             display: grid;
             grid-template-columns: 350px 1fr 350px;
@@ -57,21 +57,19 @@
             z-index: 10;
         }
 
-        /* Mobile Layout */
         @media (max-width: 1200px) {
             .hud-container {
                 display: flex;
                 flex-direction: column;
                 height: auto;
                 padding: 20px 0;
-                margin-bottom: 40px; /* Extra space for footer */
+                margin-bottom: 40px;
             }
             body { align-items: flex-start; }
             .panel { height: auto !important; min-height: 400px; }
             #center-panel { order: -1; min-height: auto; }
         }
 
-        /* --- PANELS --- */
         .panel {
             background: var(--panel-bg);
             border: 1px solid var(--border);
@@ -81,13 +79,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            clip-path: polygon(
-                0 0, 
-                100% 0, 
-                100% calc(100% - 20px), 
-                calc(100% - 20px) 100%, 
-                0 100%
-            );
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
             transition: box-shadow 0.3s ease, border-color 0.3s ease;
         }
 
@@ -96,7 +88,6 @@
             box-shadow: 0 0 20px var(--primary-dim);
         }
 
-        /* Inner container for scroll content */
         .panel-content {
             flex: 1;
             padding: 20px;
@@ -111,7 +102,6 @@
         .panel-content::-webkit-scrollbar-track { background: #111; }
         .panel-content::-webkit-scrollbar-thumb { background: var(--primary); }
 
-        /* --- HEADER & DECORATION --- */
         .panel-header {
             background: rgba(0, 255, 170, 0.05);
             padding: 10px 15px;
@@ -132,7 +122,6 @@
             opacity: 0.5;
         }
 
-        /* --- TYPOGRAPHY --- */
         h1 { font-size: 2.5rem; margin: 0; font-weight: 800; text-transform: uppercase; line-height: 0.9; text-shadow: 0 0 10px var(--primary-dim); }
         h2 { font-size: 1rem; color: #fff; border-left: 3px solid var(--primary); padding-left: 10px; margin: 30px 0 15px 0; }
         h3 { font-size: 0.9rem; margin: 0 0 5px 0; color: #fff; font-weight: 700; }
@@ -151,7 +140,6 @@
 
         .subtitle { color: var(--primary); font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 20px; display: block; }
 
-        /* --- INTERACTIVE ELEMENTS --- */
         .btn {
             display: inline-block;
             background: transparent;
@@ -204,7 +192,6 @@
             background: rgba(0, 255, 170, 0.05);
         }
 
-        /* --- TECH GRID --- */
         .tech-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -228,7 +215,6 @@
             font-weight: bold;
         }
 
-        /* --- EXPERIENCE LIST --- */
         .timeline-item {
             position: relative;
             padding-left: 20px;
@@ -245,7 +231,6 @@
         }
         .date { font-size: 0.65rem; color: var(--primary); display: block; margin-bottom: 4px; opacity: 0.8; }
 
-        /* --- PROFILE IMAGE / CENTER PIECE --- */
         .profile-scan {
             width: 120px;
             height: 120px;
@@ -267,7 +252,6 @@
             100% { transform: translateY(100%); }
         }
 
-        /* --- OVERLAYS --- */
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, var(--scanline) 50%);
@@ -285,7 +269,6 @@
             opacity: 0.5;
         }
 
-        /* --- FOOTER --- */
         .system-footer {
             position: fixed; 
             bottom: 0; 
@@ -305,13 +288,11 @@
 </head>
 <body>
 
-    <!-- VISUAL LAYERS -->
     <div class="scanlines"></div>
     <div class="vignette"></div>
 
     <div class="hud-container">
 
-        <!-- LEFT PANEL: PROJECTS -->
         <div class="panel" id="panel-left">
             <div class="panel-header">
                 <span>PROJECT_DB</span>
@@ -344,13 +325,11 @@
                         <span class="tag">WEB</span>
                     </div>
                     <p>Official station platform with live streaming audio integration.</p>
-                    <a href="https://www.wxinrock.com" target="_blank" class="btn">VISIT</a>
+                    <a href="https://ricradio.org" target="_blank" class="btn">VISIT</a>
                 </div>
 
-                <div class="card">
-                    <h3>HOME_LAB</h3>
-                    <p>30TB NAS, Proxmox/Kubernetes, Cybersecurity Sandbox (Virus Testing).</p>
-                    <a href="https://github.com/J9ck" target="_blank" class="btn btn-secondary">GITHUB</a>
+                <div class="card" style="height: 300px; padding: 0; background: #000; overflow: hidden;">
+                    <div id="terminal" style="height: 100%; padding: 10px;"></div>
                 </div>
 
                 <div class="card">
@@ -361,7 +340,6 @@
             <div class="decorative-corner"></div>
         </div>
 
-        <!-- CENTER PANEL: PROFILE -->
         <div class="panel" id="center-panel" style="border-color: var(--primary);">
             <div class="panel-header" style="justify-content: center;">
                 <span>IDENTITY_VERIFIED</span>
@@ -378,11 +356,10 @@
                         "MAKE THINGS PEOPLE LOVE."
                     </p>
                     <p style="margin-top: 10px;">
-                        Twenty two year old college student, developer, and potentially your future colleague. If I have time for it, I want to do it.
+                        Undergraduate at Rhode Island College specializing in AI and secure systems development.
                     </p>
                 </div>
 
-                <!-- ACTION BUTTONS -->
                 <div class="btn-grid">
                     <a href="resume.pdf" target="_blank" class="btn">RESUME</a>
                     <a href="mailto:Jack@Jgcks.com" class="btn">EMAIL</a>
@@ -390,7 +367,6 @@
                     <a href="https://www.github.com/J9ck" target="_blank" class="btn btn-secondary">GITHUB</a>
                 </div>
 
-                <!-- TECH STACK -->
                 <div style="text-align: left; margin-bottom: 20px;">
                     <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px;">CAPABILITIES</h3>
                     <div class="tech-grid">
@@ -413,7 +389,7 @@
 
                 <div style="margin-top: auto;">
                     <p style="font-size: 0.6rem; color: #555;">
-                        CURRENT_LOC: PROVIDENCE, RI // DUNSTABLE, MA<br>
+                        CURRENT_LOC: DUNSTABLE, MA // PROVIDENCE, RI<br>
                         STATUS: OPEN TO WORK
                     </p>
                 </div>
@@ -422,7 +398,6 @@
             <div class="decorative-corner"></div>
         </div>
 
-        <!-- RIGHT PANEL: EXPERIENCE -->
         <div class="panel" id="panel-right">
             <div class="panel-header">
                 <span>CAREER_LOG</span>
@@ -434,43 +409,35 @@
                 <div class="timeline-item">
                     <span class="date">JAN 2026 - PRESENT</span>
                     <h3>PREPARERI FELLOW</h3>
-                    <p>Skills for Rhode Island (AmeriCorps). Workforce development fellowship focusing on career readiness. Facilitating strategic partnerships between education and industry leaders to bridge the skills gap.</p>
+                    <p>Skills for Rhode Island (AmeriCorps). Workforce development fellowship focusing on career readiness and strategic partnerships.</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">APR 2024 - PRESENT</span>
                     <h3>WEB DEVELOPER</h3>
-                    <p>Freelance. Full stack development for local clients. Delivering responsive, high performance solutions and custom CMS integrations.</p>
+                    <p>Freelance. Full stack development for local clients. Delivering high performance solutions and custom integrations.</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">AUG 2022 - PRESENT</span>
                     <h3>PRODUCTION MANAGER</h3>
-                    <p>90.7 WXIN. Managing broadcast infrastructure and Title 47 Part 15 FCC compliance. Leading the Tech Committee to oversee studio hardware, live streaming pipelines, and mobile app integration.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">AUG 2025 - PRESENT</span>
-                    <h3>TEACHING ASSISTANT</h3>
-                    <p>RIC (BUS 100). Mentoring first year students in introduction to business. Facilitating review sessions and providing academic support to improve student retention.</p>
+                    <p>90.7 WXIN. Managing broadcast infrastructure and FCC compliance. Leading studio hardware and streaming pipelines.</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">JAN 2023 - PRESENT</span>
-                    <h3>HR ASSISTANT</h3>
-                    <p>Rhode Island College Human Resources. Administrative operations, confidential data handling, and systems organization. Streamlining workflow processes and ensuring data integrity across enterprise databases.</p>
+                    <h3>HR CLERICAL ASSISTANT</h3>
+                    <p>Best Buy / RIC. Administrative operations, confidential data handling, and systems organization.</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">2025 - 2026</span>
                     <h3>DEPUTY SPEAKER</h3>
-                    <p>Student Government. Leadership role managing parliamentary procedure and student advocacy. Drafting legislation and overseeing committee operations to represent the student body.</p>
+                    <p>Student Community Government. Leadership role managing parliamentary procedure and student advocacy.</p>
                 </div>
-
             </div>
             <div class="decorative-corner"></div>
         </div>
-
     </div>
 
     <div class="system-footer">
@@ -478,7 +445,6 @@
     </div>
 
     <script>
-        // Simple Clock
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour12: false });
@@ -487,14 +453,59 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Very Subtle Parallax Effect
         document.addEventListener('mousemove', (e) => {
             const x = (window.innerWidth / 2 - e.pageX) / 200;
             const y = (window.innerHeight / 2 - e.pageY) / 200;
-            
             const container = document.querySelector('.hud-container');
             container.style.transform = `translate(${x}px, ${y}px)`;
         });
+    </script>
+
+    <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+        const term = new Terminal({
+            theme: { background: '#0a0f0c', foreground: '#00ffaa', cursor: '#00ffaa' },
+            fontFamily: 'JetBrains Mono',
+            fontSize: 12,
+            cursorBlink: true
+        });
+        term.open(document.getElementById('terminal'));
+        term.writeln("CORE_INIT: Booting Wasm Chatbot...");
+
+        const engine = new webllm.MLCEngine();
+        
+        let input = "";
+        term.onData(async e => {
+            if (e === "\r") { // Enter key
+                term.write("\r\nSYS_PRC: Thinking...\r\n");
+                try {
+                    const reply = await engine.chat.completions.create({
+                        messages: [
+                            { role: "system", content: "You are Jack Doyle's AI assistant. Answer questions about his Computer Science, AI, and Cybersecurity background. Be concise and professional." },
+                            { role: "user", content: input }
+                        ]
+                    });
+                    term.write(`\r\n> ${reply.choices[0].message.content}\r\n\r\n$ `);
+                } catch (err) {
+                    term.write("\r\nERR_SYS: Chat processing failed.\r\n$ ");
+                }
+                input = "";
+            } else if (e === "\u007f") { // Backspace
+                if (input.length > 0) {
+                    input = input.slice(0, -1);
+                    term.write("\b \b");
+                }
+            } else {
+                input += e;
+                term.write(e);
+            }
+        });
+
+        // Using a compact model for speed
+        await engine.reload("Llama-3-8B-Instruct-v0.1-q4f16_1-MLC");
+        term.writeln("ACCESS_GRANTED: System Ready.");
+        term.write("\r\n$ ");
     </script>
 </body>
 </html>
