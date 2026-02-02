@@ -421,13 +421,13 @@
                 <div class="timeline-item">
                     <span class="date">AUG 2022 - PRESENT</span>
                     <h3>PRODUCTION MANAGER</h3>
-                    <p>90.7 WXIN. Managing broadcast infrastructure and FCC compliance. [cite_start]Leading studio hardware and streaming pipelines[cite: 39].</p>
+                    [cite_start]<p>90.7 WXIN[cite: 39]. Managing broadcast infrastructure and FCC compliance. [cite_start]Leading studio hardware and streaming pipelines[cite: 41, 42].</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">JAN 2023 - PRESENT</span>
                     <h3>HR CLERICAL ASSISTANT</h3>
-                    <p>Best Buy / RIC. [cite_start]Administrative operations, confidential data handling, and systems organization[cite: 44].</p>
+                    [cite_start]<p>Rhode Island College[cite: 44]. [cite_start]Administrative operations, confidential data handling, and systems organization[cite: 46, 49].</p>
                 </div>
 
                 <div class="timeline-item">
@@ -475,13 +475,13 @@
 
         const engine = new webllm.MLCEngine();
         
-        // Optimized Identity Context for Jack Doyle
+        // Identity Matrix for Jack Doyle
         const systemPrompt = `
         Identity: AI Assistant for Jack Doyle's Workstation.
-        Background: Computer Science & AI Double Major at Rhode Island College.
-        Roles: Production Manager at 90.7 WXIN, PrepareRI Fellow, HR Assistant.
-        Style: Objective precision. Concise. No fluff. Technical accuracy prioritized.
-        Knowledge Base: iOS development (Swift), Python, AI (PyTorch), Cybersecurity, Biohacking (NFC).
+        [cite_start]Owner: Jack Doyle, double majoring in Computer Science and AI at Rhode Island College[cite: 9, 10].
+        [cite_start]Professional Roles: Production Manager at 90.7 WXIN [cite: 39][cite_start], PrepareRI Fellow, and HR Assistant at RIC[cite: 44].
+        Style: Objective precision, concise, and technical.
+        Technical Knowledge: Python, AI development (PyTorch), Cybersecurity, iOS development (Swift), and Biohacking/NFC protocols.
         `;
 
         let input = "";
@@ -497,7 +497,7 @@
                     });
                     term.write(`\r\n> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
-                    term.write("\r\nERR_SYS: Chat processing failed. Ensure self.crossOriginIsolated is true.\r\n$ ");
+                    term.write("\r\nERR_SYS: Chat processing failed. Re-verify cross-origin isolation.\r\n$ ");
                 }
                 input = "";
             } else if (e === "\u007f") { // Backspace
@@ -511,13 +511,14 @@
             }
         });
 
-        // Using a compact model for speed
+        // Using Phi-3-mini for improved stability and lower memory overhead
         try {
-            await engine.reload("Llama-3-8B-Instruct-v0.1-q4f16_1-MLC");
-            term.writeln("ACCESS_GRANTED: System Ready.");
+            await engine.reload("Phi-3-mini-4k-instruct-q4f16_1-MLC");
+            term.writeln("ACCESS_GRANTED: Identity Context Synchronized.");
             term.write("\r\n$ ");
         } catch (initErr) {
-            term.writeln("FATAL_ERR: Failed to initialize Wasm engine.");
+            console.error("Initialization Detail:", initErr);
+            term.writeln("FATAL_ERR: Failed to initialize Wasm engine. Check WebGPU status.");
         }
     </script>
 </body>
