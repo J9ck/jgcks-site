@@ -238,7 +238,12 @@
             border: 2px solid var(--primary);
             margin: 0 auto 20px auto;
             position: relative;
-            background: url('https://github.com/J9ck.png') center/cover;
+            /* IMAGE LOADING FIX: Try local file first, then Github. Split properties for safety. */
+            background-image: url('me.png'), url('https://github.com/J9ck.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #000; /* Fallback color so it's not transparent */
             filter: contrast(1.1); 
         }
         .profile-scan::after {
@@ -489,7 +494,7 @@
             const lines = [
                 "INITIALIZING Z.I.G.G.Y. KERNEL...",
                 "LOADING NEURAL INTERFACES...",
-                "CONNECTING TO BIO-IMPLANT (NExT/xG3)... [OK]",
+                "CONNECTING TO JACKS_IMPLANT... [OK]",
                 "ESTABLISHING SECURE CONNECTION TO JGCKS.COM...",
             ];
 
@@ -569,12 +574,12 @@
                 return true;
             }
             if (clean.includes("JAMIE GOLDBERG")) {
-                term.write("\r\n\x1b[34mIDENTITY: JAMIE GOLDBERG CONFIRMED.\x1b[0m\r\n");
+                term.write("\r\n\x1b[34mIDENTITY: JAMIE GOLDBERG (VP) CONFIRMED.\x1b[0m\r\n");
                 activeSystemPrompt = atob(PROMPTS.JAMIE);
                 return true;
             }
             if (clean.includes("MEG TANCREDE")) {
-                term.write("\r\n\x1b[37mIDENTITY: MEG TANCREDE CONFIRMED.\x1b[0m\r\n");
+                term.write("\r\n\x1b[37mIDENTITY: MEG TANCREDE (PICTURES) CONFIRMED.\x1b[0m\r\n");
                 activeSystemPrompt = atob(PROMPTS.MEG);
                 return true;
             }
@@ -589,7 +594,7 @@
                 return true;
             }
             if (clean.includes("BRODIE BURGUN")) {
-                term.write("\r\n\x1b[33mIDENTITY: BRODIE BURGUN CONFIRMED. CHAOS PROTOCOL.\x1b[0m\r\n");
+                term.write("\r\n\x1b[33mIDENTITY: BRODIE BURGUN CONFIRMED. GOOBER PROTOCOL.\x1b[0m\r\n");
                 activeSystemPrompt = atob(PROMPTS.BRODIE);
                 return true;
             }
