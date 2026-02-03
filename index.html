@@ -427,7 +427,7 @@
                 <div class="timeline-item">
                     <span class="date">JAN 2023 - PRESENT</span>
                     <h3>HR CLERICAL ASSISTANT</h3>
-                    <p>Rhode Island College. Administrative operations, confidential data handling, and systems organization.</p>
+                    <p>Best Buy / RIC. Administrative operations, confidential data handling, and systems organization.</p>
                 </div>
 
                 <div class="timeline-item">
@@ -474,6 +474,7 @@
         term.writeln("CORE_INIT: Booting Wasm Chatbot...");
 
         const engine = new webllm.MLCEngine();
+        let isModelLoaded = false;
         
         // Identity Matrix for Jack Doyle
         const systemPrompt = `
@@ -486,6 +487,11 @@
 
         let input = "";
         term.onData(async e => {
+            // BLOCKING: Do not allow chat if model isn't ready
+            if (!isModelLoaded) {
+                return;
+            }
+
             if (e === "\r") { // Enter key
                 term.write("\r\nSYS_PRC: Thinking...\r\n");
                 try {
@@ -511,14 +517,24 @@
             }
         });
 
+        // Initialize progress bar
+        const initProgressCallback = (report) => {
+            // \r returns to start of line, \x1b[K clears the line. Creates animation effect.
+            term.write(`\r\x1b[KSYS_LOAD: ${report.text}`);
+        };
+
         // Using Phi-3-mini for improved stability and lower memory overhead
         try {
+            engine.setInitProgressCallback(initProgressCallback);
             await engine.reload("Phi-3-mini-4k-instruct-q4f16_1-MLC");
+            
+            isModelLoaded = true;
+            term.write("\r\x1b[K"); // Clear the loading line one last time
             term.writeln("ACCESS_GRANTED: Identity Context Synchronized.");
             term.write("\r\n$ ");
         } catch (initErr) {
             console.error("Initialization Detail:", initErr);
-            term.writeln("FATAL_ERR: Failed to initialize Wasm engine. Check WebGPU status.");
+            term.writeln("\r\nFATAL_ERR: Failed to initialize Wasm engine. Check WebGPU status.");
         }
     </script>
 </body>
