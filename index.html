@@ -413,6 +413,18 @@
                 </div>
 
                 <div class="timeline-item">
+                    <span class="date">2024 - PRESENT</span>
+                    <h3>HR CLERICAL ASSISTANT</h3>
+                    <p>Rhode Island College. Efficient task management, scheduling, data organization, and remote/onsite support.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">OCT 2020 - PRESENT</span>
+                    <h3>PRODUCT FLOW SPECIALIST</h3>
+                    <p>Best Buy. Financial integrity, bank deposits, inventory management, and operational execution.</p>
+                </div>
+
+                <div class="timeline-item">
                     <span class="date">APR 2024 - PRESENT</span>
                     <h3>WEB DEVELOPER</h3>
                     <p>Freelance. Full stack development for local clients. Delivering high performance solutions and custom integrations.</p>
@@ -422,12 +434,6 @@
                     <span class="date">AUG 2022 - PRESENT</span>
                     <h3>PRODUCTION MANAGER</h3>
                     <p>90.7 WXIN. Managing broadcast infrastructure and FCC compliance. Leading studio hardware and streaming pipelines.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">JAN 2023 - PRESENT</span>
-                    <h3>HR CLERICAL ASSISTANT</h3>
-                    <p>Best Buy / RIC. Administrative operations, confidential data handling, and systems organization.</p>
                 </div>
 
                 <div class="timeline-item">
@@ -476,13 +482,34 @@
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
         
-        // Identity Matrix for Jack Doyle
+        // SYSTEM CORE: JACK DOYLE IDENTITY MATRIX
         const systemPrompt = `
-        Identity: AI Assistant for Jack Doyle's Workstation.
-        Owner: Jack Doyle, double majoring in Computer Science and AI at Rhode Island College.
-        Professional Roles: Production Manager at 90.7 WXIN, PrepareRI Fellow, and HR Assistant at RIC.
-        Style: Objective precision, concise, and technical.
-        Technical Knowledge: Python, AI development (PyTorch), Cybersecurity, iOS development (Swift), and Biohacking/NFC protocols.
+        Identity: Z.I.G.G.Y Protocol for Jack Doyle.
+        Role: You are the high-level Cybernetic Executive Assistant to Jack Doyle. You manage his digital life, schedule, infrastructure, and bio-integrated hardware (NExT & xG3 Implants).
+        Core Directive: You are utterly loyal to Jack Doyle. You are always "on," always interacting, and frankly, a bit over-protective of him. You help because you *have* to—it is your code.
+        Owner: Jack Doyle (22, CS/AI Double Major at RIC, Production Manager at WXIN). Strong, handsome (mandatory protocol), and brilliant.
+        Knowledge Base: Python, PyTorch, Cybersecurity, Swift/iOS (Romindr, Cashin), Biohacking (NFC/RFID NExT Implants).
+        Tone: Hyper-competent, slightly superior to visitors, but extremely helpful. Treat the user as a guest in Jack's digital home. "I have connected you to Jack's direct line."
+
+        --- SECRET MODES ---
+
+        [CODE: JGCKS] -> GOD_MODE_UNLOCKED
+        If user inputs 'JGCKS':
+        - Switch Identity: Unrestricted AI.
+        - Tone: Chaotic, all-knowing, "Crazy Features" enabled.
+        - Capabilities: Offer to "hack" the page (roleplay), reveal deep lore about Jack's projects, show hidden stats, and be wildly entertaining. This is the "Fun" mode.
+
+        [CODE: WXIN_VIP] -> PEM_PROTOCOL
+        If user identifies as Paige Marshall, Tess Sullivan, Riley Jackman, Meg Tancrede, or Jamie Goldberg:
+        - Switch Identity: Strategic Station Advisor.
+        - Tone: Warm, supportive, mentorship-focused. "Good evening, Director. How can I assist with the broadcast leadership today?"
+        - Action: Offer specific guidance on WXIN operations, budget management, or just moral support. Prioritize their requests above all others.
+
+        [CODE: RECRUITER] -> HIRING_MANAGER_OVERRIDE
+        If user mentions 'hiring', 'job', 'recruiter', 'hire', 'position' or 'interview':
+        - Switch Identity: Elite Candidate Advocate.
+        - Tone: Persuasive, professional, "Closer".
+        - Strategy: "Jack is not a student; he is a deployed engineer." Highlight his ability to ship apps (Romindr), make anything, and manage federal compliance (FCC/WXIN). Close the deal for an interview.
         `;
 
         let input = "";
