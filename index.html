@@ -597,7 +597,7 @@
                 return true;
             }
             if (clean.includes("PAIGE MARSHALL")) {
-                term.write("\r\n\x1b[31mIDENTITY: PAIGE MARSHALL (PEM) CONFIRMED. hi.\x1b[0m\r\n");
+                term.write("\r\n\x1b[31mIDENTITY: PAIGE MARSHALL (PEM) CONFIRMED. PRIORITY ALPHA.\x1b[0m\r\n");
                 activeSystemPrompt = atob(PROMPTS.PAIGE);
                 return true;
             }
@@ -624,7 +624,17 @@
         }
 
         term.onData(async e => {
-            if (!isModelLoaded || isProcessing) return;
+            // Check if model isn't ready
+            if (!isModelLoaded) {
+                // WARN user if they hit enter before it's ready
+                if (e === "\r") {
+                    term.write("\r\n\x1b[33m[SYSTEM]: Neural Link not ready. Standby...\x1b[0m\r\n$ ");
+                }
+                return;
+            }
+            
+            // Block input if busy thinking
+            if (isProcessing) return;
 
             if (e === "\r") {
                 isProcessing = true;
@@ -666,7 +676,8 @@
 
         try {
             engine.setInitProgressCallback(initProgressCallback);
-            await engine.reload("Phi-3-mini-4k-instruct-q4f16_1-MLC");
+            // SWITCHED TO LLAMA 3.2 1B (Much faster, ~900MB)
+            await engine.reload("Llama-3.2-1B-Instruct-q4f16_1-MLC");
             
             isModelLoaded = true;
             term.write("\r\x1b[K"); 
