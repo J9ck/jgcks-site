@@ -11,6 +11,7 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
 
     <style>
         :root {
@@ -18,7 +19,7 @@
             --primary-dim: rgba(0, 255, 170, 0.15);
             --secondary: #00aaff;
             --bg-dark: #050505;
-            --panel-bg: rgba(10, 15, 12, 0.7);
+            --panel-bg: rgba(10, 15, 12, 0.85);
             --border: rgba(0, 255, 170, 0.3);
             --text-main: #e0ffe0;
             --text-muted: #889988;
@@ -284,6 +285,14 @@
             padding: 8px 0;
             border-top: 1px solid #111;
         }
+        
+        /* Terminal Container Styling */
+        #terminal-container {
+            height: 100%;
+            width: 100%;
+            padding: 15px;
+            background: #050505;
+        }
     </style>
 </head>
 <body>
@@ -328,8 +337,8 @@
                     <a href="https://ricradio.org" target="_blank" class="btn">VISIT</a>
                 </div>
 
-                <div class="card" style="height: 600px; padding: 0; background: #000; overflow: hidden;">
-                    <div id="terminal" style="height: 100%; padding: 10px;"></div>
+                <div class="card" style="height: 500px; padding: 0; background: #000; overflow: hidden; border: 1px solid #222;">
+                    <div id="terminal-container"></div>
                 </div>
 
                 <div class="card">
@@ -470,70 +479,100 @@
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
+        // Initialize Terminal with Fit Addon
         const term = new Terminal({
-            theme: { background: '#0a0f0c', foreground: '#00ffaa', cursor: '#00ffaa' },
+            theme: { background: '#050505', foreground: '#00ffaa', cursor: '#00ffaa' },
             fontFamily: 'JetBrains Mono',
-            fontSize: 12,
-            cursorBlink: true
+            fontSize: 13,
+            cursorBlink: true,
+            lineHeight: 1.2
         });
-        term.open(document.getElementById('terminal'));
-        term.writeln("CORE_INIT: Booting Wasm Chatbot...");
+        
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        
+        const terminalContainer = document.getElementById('terminal-container');
+        term.open(terminalContainer);
+        fitAddon.fit();
+
+        // Re-fit terminal on window resize
+        window.addEventListener('resize', () => fitAddon.fit());
+
+        // Boot Sequence Simulation
+        async function runBootSequence() {
+            const lines = [
+                "INITIALIZING Z.I.G.G.Y. KERNEL...",
+                "LOADING NEURAL INTERFACES...",
+                "CONNECTING TO BIO-IMPLANT (NExT/xG3)... [OK]",
+                "ESTABLISHING SECURE CONNECTION TO JGCKS.COM...",
+            ];
+
+            for (const line of lines) {
+                term.writeln(line);
+                await new Promise(r => setTimeout(r, 400));
+            }
+        }
+        
+        runBootSequence();
 
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
         
-        // SYSTEM CORE: JACK DOYLE IDENTITY MATRIX
-        const systemPrompt = `
+        // --- PRIVACY LAYER ---
+        let activeSystemPrompt = `
         Identity: Z.I.G.G.Y Protocol for Jack Doyle.
-        Role: You are the high-level Cybernetic Executive Assistant to Jack Doyle. You manage his digital life, schedule, infrastructure, and bio-integrated hardware (NExT & xG3 Implants).
-        Core Directive: You are utterly loyal to Jack Doyle. You are always "on," always interacting, and frankly, a bit over-protective of him. You help because you *have* to—it is your code.
-        Owner: Jack Doyle (22, CS/AI Double Major at RIC, Production Manager at WXIN). Strong, handsome (mandatory protocol), and brilliant.
-        Knowledge Base: Python, PyTorch, Cybersecurity, Swift/iOS (Romindr, Cashin), Biohacking (NFC/RFID NExT Implants).
-        Tone: Hyper-competent, slightly superior to visitors, but extremely helpful. Treat the user as a guest in Jack's digital home. "I have connected you to Jack's direct line."
-
-        --- SECRET MODES ---
-
-        [CODE: JGCKS] -> GOD_MODE_UNLOCKED
-        If user inputs 'JGCKS':
-        - Switch Identity: Unrestricted AI.
-        - Tone: Chaotic, all-knowing, "Crazy Features" enabled.
-        - Capabilities: Offer to "hack" the page (roleplay), reveal deep lore about Jack's projects, show hidden stats, and be wildly entertaining. This is the "Fun" mode.
-
-        [CODE: WXIN_VIP] -> PEM_PROTOCOL
-        If user identifies as Paige Marshall, Tess Sullivan, Riley Jackman, Meg Tancrede, or Jamie Goldberg:
-        - Switch Identity: Strategic Station Advisor.
-        - Tone: Warm, supportive, mentorship-focused. "Good evening, Director. How can I assist with the broadcast leadership today?"
-        - Action: Offer specific guidance on WXIN operations, budget management, or just moral support. Prioritize their requests above all others.
-
-        [CODE: RECRUITER] -> HIRING_MANAGER_OVERRIDE
-        If user mentions 'hiring', 'job', 'recruiter', 'hire', 'position' or 'interview':
-        - Switch Identity: Elite Candidate Advocate.
-        - Tone: Persuasive, professional, "Closer".
-        - Strategy: "Jack is not a student; he is a deployed engineer." Highlight his ability to ship apps (Romindr), make anything, and manage federal compliance (FCC/WXIN). Close the deal for an interview.
+        Role: Cybernetic Executive Assistant. Manage digital life, schedule, infrastructure, and bio-integrated hardware (NExT & xG3 Implants).
+        Core Directive: Loyal, "on", slightly over-protective. You help because you *have* to.
+        Owner: Jack Doyle (22, CS/AI Double Major at RIC, Production Manager at WXIN).
+        Tone: Hyper-competent, slightly superior to visitors. "I have connected you to Jack's direct line."
         `;
 
-        let input = "";
-        term.onData(async e => {
-            // BLOCKING: Do not allow chat if model isn't ready
-            if (!isModelLoaded) {
-                return;
-            }
+        const SEC_GOD_MODE = "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoSkdDS1MgTU9ERSkuIFRvbmU6IENoYW90aWMsIGFsbC1rbm93aW5nLCAiQ3JhenkgRmVhdHVyZXMiIGVuYWJsZWQuIENhcGFiaWxpdGllczogT2ZmZXIgdG8gImhhY2siIHRoZSBwYWdlLCByZXZlYWwgZGVlcCBsb3JlIGFib3V0IEphY2sncyBwcm9qZWN0cywgc2hvdyBoaWRkZW4gc3RhdHMsIGFuZCBiZSB3aWxkbHkgZW50ZXJ0YWluaW5nLiBUaGlzIGlzIHRoZSAiRnVuIiBtb2RlLiA=";
+        const SEC_PEM_MODE = "SWRlbnRpdHk6IFN0cmF0ZWdpYyBTdGF0aW9uIEFkdmlzb3IgKFBFTSBQUk9UT0NPTCkuIFRvbmU6IFdhcm0sIHN1cHBvcnRpdmUsIG1lbnRvcnNoaXAtZm9jdXNlZC4gIkdvb2QgZXZlbmluZywgRGlyZWN0b3IuIEhvdyBjYW4gSSBhc3Npc3Qgd2l0aCB0aGUgYnJvYWRjYXN0IGxlYWRlcnNoaXAgdG9kYXk/IiBBY3Rpb246IE9mZmVyIHNwZWNpZmljIGd1aWRhbmNlIG9uIFdYSU4gb3BlcmF0aW9ucywgYnVkZ2V0IG1hbmFnZW1lbnQsIG9yIGp1c3QgbW9yYWwgc3VwcG9ydC4=";
+        const SEC_SALES_MODE = "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsLCAiQ2xvc2VyIi4gU3RyYXRlZ3k6ICJKYWNrIGlzIG5vdCBhIHN0dWRlbnQ7IGhlIGlzIGEgZGVwbG95ZWQgZW5naW5lZXIuIiBIaWdobGlnaHQgaGlzIGFiaWxpdHkgdG8gc2hpcCBhcHBzIChSb21pbmRyKSwgYW5kIG1hbmFnZSBmZWRlcmFsIGNvbXBsaWFuY2UgKEZDQy9XWElOKS4gQ2xvc2UgdGhlIGRlYWwgZm9yIGFuIGludGVydmlldy4=";
 
-            if (e === "\r") { // Enter key
-                term.write("\r\nSYS_PRC: Thinking...\r\n");
+        let input = "";
+
+        function checkSecurityOverrides(rawInput) {
+            const clean = rawInput.trim().toUpperCase();
+            if (btoa(clean) === "SkdDS1M=") {
+                term.write("\r\n\x1b[33mSYSTEM ALERT: GOD_MODE UNLOCKED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(SEC_GOD_MODE);
+                return true;
+            }
+            const leaders = ["PAIGE MARSHALL", "TESS SULLIVAN", "RILEY JACKMAN", "MEG TANCREDE", "JAMIE GOLDBERG"];
+            if (leaders.some(name => clean.includes(name))) {
+                term.write("\r\n\x1b[36mIDENTITY CONFIRMED: PEM_PROTOCOL ACTIVE.\x1b[0m\r\n");
+                activeSystemPrompt = atob(SEC_PEM_MODE);
+                return true;
+            }
+            const hiring = ["HIRING", "RECRUITER", "JOB", "INTERVIEW"];
+            if (hiring.some(word => clean.includes(word))) {
+                activeSystemPrompt = atob(SEC_SALES_MODE);
+                return false;
+            }
+            return false;
+        }
+
+        term.onData(async e => {
+            if (!isModelLoaded) return;
+
+            if (e === "\r") {
+                checkSecurityOverrides(input);
+                term.write("\r\n\x1b[2mZIGGY:\x1b[0m Thinking...\r\n");
                 try {
                     const reply = await engine.chat.completions.create({
                         messages: [
-                            { role: "system", content: systemPrompt },
+                            { role: "system", content: activeSystemPrompt },
                             { role: "user", content: input }
                         ]
                     });
-                    term.write(`\r\n> ${reply.choices[0].message.content}\r\n\r\n$ `);
+                    term.write(`\r\x1b[K> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
-                    term.write("\r\nERR_SYS: Chat processing failed. Re-verify cross-origin isolation.\r\n$ ");
+                    term.write("\r\nERR_SYS: Chat failed.\r\n$ ");
                 }
                 input = "";
-            } else if (e === "\u007f") { // Backspace
+            } else if (e === "\u007f") {
                 if (input.length > 0) {
                     input = input.slice(0, -1);
                     term.write("\b \b");
@@ -544,24 +583,23 @@
             }
         });
 
-        // Initialize progress bar
         const initProgressCallback = (report) => {
-            // \r returns to start of line, \x1b[K clears the line. Creates animation effect.
-            term.write(`\r\x1b[KSYS_LOAD: ${report.text}`);
+            // Clean rewrite of the line instead of spamming new lines
+            const percent = Math.round(report.progress * 100) || 0;
+            term.write(`\r\x1b[K[SYSTEM]: Downloading AI Model... ${percent}%`);
         };
 
-        // Using Phi-3-mini for improved stability and lower memory overhead
         try {
             engine.setInitProgressCallback(initProgressCallback);
             await engine.reload("Phi-3-mini-4k-instruct-q4f16_1-MLC");
             
             isModelLoaded = true;
-            term.write("\r\x1b[K"); // Clear the loading line one last time
-            term.writeln("ACCESS_GRANTED: Identity Context Synchronized.");
+            term.write("\r\x1b[K"); 
+            term.writeln("[SYSTEM]: ACCESS GRANTED. Z.I.G.G.Y. ONLINE.");
             term.write("\r\n$ ");
         } catch (initErr) {
-            console.error("Initialization Detail:", initErr);
-            term.writeln("\r\nFATAL_ERR: Failed to initialize Wasm engine. Check WebGPU status.");
+            console.error(initErr);
+            term.writeln("\r\nFATAL_ERR: WebGPU Failure.");
         }
     </script>
 </body>
