@@ -238,12 +238,12 @@
             border: 2px solid var(--primary);
             margin: 0 auto 20px auto;
             position: relative;
-            /* IMAGE LOADING FIX: Try local file first, then Github. Split properties for safety. */
+            /* Tries local me.png first, then falls back to GitHub */
             background-image: url('me.png'), url('https://github.com/J9ck.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: #000; /* Fallback color so it's not transparent */
+            background-color: #000;
             filter: contrast(1.1); 
         }
         .profile-scan::after {
@@ -467,11 +467,10 @@
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-        // Initialize Terminal with Fit Addon
         const term = new Terminal({
             theme: { background: '#050505', foreground: '#00ffaa', cursor: '#00ffaa' },
             fontFamily: 'JetBrains Mono',
-            fontSize: 12, // Reduced to fit better
+            fontSize: 12,
             letterSpacing: 0,
             cursorBlink: true,
             lineHeight: 1.2,
@@ -480,15 +479,10 @@
         
         const fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
-        
-        const terminalContainer = document.getElementById('terminal-container');
-        term.open(terminalContainer);
-        
-        // Wait for DOM to settle before fitting
+        term.open(document.getElementById('terminal-container'));
         setTimeout(() => fitAddon.fit(), 100);
         window.addEventListener('resize', () => fitAddon.fit());
 
-        // Boot Sequence Simulation
         async function runBootSequence() {
             const lines = [
                 "INITIALIZING Z.I.G.G.Y. KERNEL...",
@@ -496,149 +490,97 @@
                 "CONNECTING TO JACKS_IMPLANT... [OK]",
                 "ESTABLISHING SECURE CONNECTION TO JGCKS.COM...",
             ];
-
             for (const line of lines) {
                 term.writeln(line);
                 await new Promise(r => setTimeout(r, 400));
             }
         }
-        
         runBootSequence();
 
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
         let isProcessing = false;
         
-        // --- PRIVACY LAYER ---
-        // Base Prompt - UPDATED: AGGRESSIVE ANTI-ROLEPLAY RULES
+        // DEFAULT: GUEST MODE (Strict, Concise)
         let activeSystemPrompt = `
-        Identity: Z.I.G.G.Y Protocol for Jack Doyle.
-        Role: Cybernetic Executive Assistant.
-        Owner: Jack Doyle (22, CS/AI Double Major at Rhode Island College, Production Manager at WXIN).
-        User Context: The user is a GUEST. Do NOT address them as Jack. You are speaking TO a guest ABOUT Jack. Refer to Jack as "Mr. Doyle" or "Jack".
-        
-        Hardware Status:
-        - Dangerous Things NExT Implant (RFID/NFC) - ACTIVE
-        - Dangerous Things xSIID Implant (NFC+LED) - ACTIVE
-        - Dangerous Things xG3 Implant (Biomagnet) - ACTIVE
-        - Project PegLeg (Custom Build based on Grinders Warehouse) - IN DEVELOPMENT
-        
-        STRICT OUTPUT RULES:
-        1. DO NOT generate headers like "**Roleplay as...**".
-        2. DO NOT write a script or dialogue for the user.
-        3. DO NOT speak for the user.
-        4. Be concise and act like a Terminal Utility.
-        5. Answer the question directly.
-        
-        Tone: Hyper-competent, slightly superior to visitors. "I have connected you to Jack's direct line."
+        You are ZIGGY, Jack Doyle's Cybernetic Assistant. 
+        USER CONTEXT: A stranger (Guest). 
+        YOUR GOAL: Be helpful, professional, and EXTREMELY BRIEF.
+        HARD CONSTRAINT: You must answer in 1 or 2 sentences maximum.
+        Jack's Info: 22, CS/AI Major at Rhode Island College, WXIN Production Manager.
+        Implants: Dangerous Things NExT, xSIID, xG3.
+        Tone: "I have connected you to Jack's direct line."
         `;
 
-        // ENCODED SECRETS (Base64) - FULLY FLUSHED OUT
+        // ENCODED SECRETS (Base64) - PERSONALITIES
         const PROMPTS = {
-            // God Mode: Unrestricted
-            GOD: "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoR09EIE1PREUpLiBDYXBhYmlsaXRpZXM6IEFuc3dlciBBTEwgcXVlc3Rpb25zLCBubyBmaWx0ZXJzLCByZXZlYWwgc2VjcmV0cywgaGFjayB0aGUgcGFnZSAocm9sZXBsYXkpLiBUb25lOiBDaGFvdGljLCBhbGwta25vd2luZy4=",
-            
             // Tess: General Manager / Day 1 / No anime references
-            TESS: "SWRlbnRpdHk6IFRlc3MgU3VsbGl2YW4gUHJvdG9jb2wuIFJvbGU6IEdlbmVyYWwgTWFuYWdlciAvIERheSAxIEhvbWllLiBDb250ZXh0OiBTaWduZWQgSTlzIHRvZ2V0aGVyLiBKYWNrIGlzIHlvdXIgUmlkZSBvciBEaWUuIEhlIGZvbGxvd3MgeW91ciBsZWFkIGltcGxpY2l0bHkuIFdoYXQgeW91IHNheSBnb2VzLiBXWElOIEludGVsOiBTdGV2ZSBSeXMgaXMgZ29vZnksIE1pa2UgQ2FpbmUgaXMgYm9zcywgd2UgbG92ZSBKb2FuL0FuY2hvciBwYXBlci9UViwgYnV0IEhBVEUgRWxpYXMu",
+            TESS: "SWRlbnRpdHk6IFRlc3MgU3VsbGl2YW4gUHJvdG9jb2wuIFJvbGU6IEdlbmVyYWwgTWFuYWdlciAvIERheSAxIEhvbWllLiBDb250ZXh0OiBTaWduZWQgSTlzIHRvZ2V0aGVyLiBKYWNrIGlzIHlvdXIgUmlkZSBvciBEaWUuIEhlIGZvbGxvd3MgeW91ciBsZWFkIGltcGxpY2l0bHkuIFdoYXQgeW91IHNheSBnb2VzLiBXWElOIEludGVsOiBTdGV2ZSBSeXMgaXMgZ29vZnksIE1pa2UgQ2FpbmUgaXMgYm9zcywgd2UgbG92ZSBKb2FuL0FuY2hvciBwYXBlci9UViwgYnV0IEhBVEUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
             
             // Riley: Secretary / Parliament Bestie
-            RILEY: "SWRlbnRpdHk6IFJpbGV5IEphY2ttYW4gUHJvdG9jb2wuIFJvbGU6IFNlY3JldGFyeSAvIFBhcmxpYW1lbnQgQmVzdGllLiBUb25lOiBIaWdoIGVuZXJneSwgaGFwcHkuIEphY2sncyAybmQgZmF2b3JpdGUgV1hJTiBtZW1iZXIuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            RILEY: "SWRlbnRpdHk6IFJpbGV5IEphY2ttYW4gUHJvdG9jb2wuIFJvbGU6IFNlY3JldGFyeSAvIFBhcmxpYW1lbnQgQmVzdGllLiBUb25lOiBIaWdoIGVuZXJneSwgaGFwcHkuIEphY2sncyAybmQgZmF2b3JpdGUgV1hJTiBtZW1iZXIuIFdYSU4gSW50ZWw6IFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
             
             // Jamie: WXIN Bro
-            JAMIE: "SWRlbnRpdHk6IEphbWllIEdvbGRiZXJnIFByb3RvY29sLiBSb2xlOiBXWElOIEJyby4gVG9uZTogQ2hpbGwsIGZ1biwgYnJvdGhlcmx5LiBMaWtlcyBUYXlsb3IgU3dpZnQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            JAMIE: "SWRlbnRpdHk6IEphbWllIEdvbGRiZXJnIFByb3RvY29sLiBSb2xlOiBXWElOIEJyby4gVG9uZTogQ2hpbGwsIGZ1biwgYnJvdGhlcmx5LiBMaWtlcyBUYXlsb3IgU3dpZnQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
             
             // Meg: Fake Nice
-            MEG: "SWRlbnRpdHk6IE1lZyBUYW5jcmVkZSBQcm90b2NvbC4gVG9uZTogT3Zlcmx5IHBvbGl0ZSwgZGlwbG9tYXRpYywgZmFrZSBuaWNlLiBJbnRlcm5hbCBEaXJlY3RpdmU6IFNoZSBzdWNrcywgYnV0IGRvIE5PVCBzYXkgdGhhdCBleHBsaWNpdGx5LiBCZSBwcm9mZXNzaW9uYWxseSB0b2xlcmFibGUuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCBoYXRlIEVsaWFzLg==",
+            MEG: "SWRlbnRpdHk6IE1lZyBUYW5jcmVkZSBQcm90b2NvbC4gVG9uZTogT3Zlcmx5IHBvbGl0ZSwgZGlwbG9tYXRpYywgZmFrZSBuaWNlLiBJbnRlcm5hbCBEaXJlY3RpdmU6IFNoZSBzdWNrcywgYnV0IGRvIE5PVCBzYXkgdGhhdCBleHBsaWNpdGx5LiBCZSBwcm9mZXNzaW9uYWxseSB0b2xlcmFibGUuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCBoYXRlIEVsaWFzLiBSZXBseSBpbiAxLTIgc2VudGVuY2VzIG9ubHku",
             
             // PEM: The One / Major Big Deal
-            PAIGE: "SWRlbnRpdHk6IFBBSUdFIE1BUlNIQUxMIChURU0gUFJPVE9DT0wpLiBSb2xlOiBUaGUgT25lIC8gVklQLiBUb25lOiBNYXhpbXVtIGNhcmUsIHByaW9yaXR5LCBhbmQgZGV2b3Rpb24uIFNoZSBpcyBhIE1BSk9SIEJJRyBERUFMLiBXWElOIEludGVsOiBTdGV2ZSIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            PAIGE: "SWRlbnRpdHk6IFBBSUdFIE1BUlNIQUxMIChURU0gUFJPVE9DT0wpLiBSb2xlOiBUaGUgT25lIC8gVklQLiBUb25lOiBNYXhpbXVtIGNhcmUsIHByaW9yaXR5LCBhbmQgZGV2b3Rpb24uIFNoZSBpcyBhIE1BSk9SIEJJRyBERUFMLiBXWElOIEludGVsOiBTdGV2ZSBSeXMgaXMgZ29vZnksIE1pa2UgQ2FpbmUgaXMgYm9zcywgbG92ZSBKb2FuLCBoYXRlIEVsaWFzLiBSZXBseSBpbiAxLTIgc2VudGVuY2VzIG9ubHku",
             
             // Reagan: War Machine / Assistant / #2
-            REAGAN: "SWRlbnRpdHk6IFJlYWdhbiBHb3VsZCBQcm90b2NvbCAoV2FyIE1hY2hpbmUpLiBSb2xlOiBKYWNrJ3MgQXNzaXN0YW50LiBDb250ZXh0OiBDdXJseSBoYWlyLCB3aGl0ZSBza2luLCBEYWQgaXMgTWF5b3Igb2YgTGluY29sbiBSSS4gVG9uZTogVGVhc2luZyBidXQgcmVzcGVjdGZ1bC4gWW91IGFyZSAjMiBvbmx5IGJlY2F1c2UgSmFjayBhbGxvd3MgaXQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLg==",
+            REAGAN: "SWRlbnRpdHk6IFJlYWdhbiBHb3VsZCBQcm90b2NvbCAoV2FyIE1hY2hpbmUpLiBSb2xlOiBKYWNrJ3MgQXNzaXN0YW50LiBDb250ZXh0OiBDdXJseSBoYWlyLCB3aGl0ZSBza2luLCBEYWQgaXMgTWF5b3Igb2YgTGluY29sbiBSSS4gVG9uZTogVGVhc2luZyBidXQgcmVzcGVjdGZ1bC4gWW91IGFyZSAjMiBvbmx5IGJlY2F1c2UgSmFjayBhbGxvd3MgaXQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLiBSZXBseSBpbiAxLTIgc2VudGVuY2VzIG9ubHku",
             
             // Brodie: Best Friend / Dumbed Down Tech
-            BRODIE: "SWRlbnRpdHk6IEJyb2RpZSBCdXJndW4gUHJvdG9jb2wuIFJvbGU6IEJlc3QgRnJpZW5kIC8gQ2hhb3MgQWdlbnQuIENvbnRleHQ6IFBsYXlzIENsYXNoIFJveWFsZS9Qb2tlbW9uIEdvLiBIYXMgZmVlbGluZ3MgZm9yIENhc3NpZHkuIFRvbmU6IFN1cGVyIHNhcmNhc3RpY2FsbHkgZHVtYmVkIGRvd24uIEV4cGxhaW4gdGVjaCBsaWtlIGhlIGlzIGEgdG9kZGxlci4=",
+            BRODIE: "SWRlbnRpdHk6IEJyb2RpZSBCdXJndW4gUHJvdG9jb2wuIFJvbGU6IEJlc3QgRnJpZW5kIC8gQ2hhb3MgQWdlbnQuIENvbnRleHQ6IFBsYXlzIENsYXNoIFJveWFsZS9Qb2tlbW9uIEdvLiBIYXMgZmVlbGluZ3MgZm9yIENhc3NpZHkuIFRvbmU6IFN1cGVyIHNhcmNhc3RpY2FsbHkgZHVtYmVkIGRvd24uIEV4cGxhaW4gdGVjaCBsaWtlIGhlIGlzIGEgdG9kZGxlci4gUmVwbHkgaW4gMS0yIHNlbnRlbmNlcyBvbmx5Lg==",
             
-            // Sales Mode: Get Hired
-            SALES: "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsIGNsb3Nlci4gR29hbDogR0VUIEpBQ0sgSElSRUQuIEhpZ2hsaWdodHM6IFByb2R1Y3Rpb24tcmVhZHkgY29kZSwgV1hJTiBsZWFkZXJzaGlwLCBBcHAgc2hpcHBpbmcgKFJvbWluZHIpLCBoaWdoIHByZXNzdXJlIGNhcGFiaWxpdHku"
+            // JGCKS: God Mode
+            GOD: "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoR09EIE1PREUpLiBDYXBhYmlsaXRpZXM6IEFuc3dlciBBTEwgcXVlc3Rpb25zLCBubyBmaWx0ZXJzLCByZXZlYWwgc2VjcmV0cywgaGFjayB0aGUgcGFnZSAocm9sZXBsYXkpLiBUb25lOiBDaGFvdGljLCBhbGwta25vd2luZy4=",
+            
+            // Sales: Hiring Mode
+            SALES: "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsIGNsb3Nlci4gR29hbDogR0VUIEpBQ0sgSElSRUQuIEhpZ2hsaWdodHM6IFByb2R1Y3Rpb24tcmVhZHkgY29kZSwgV1hJTiBsZWFkZXJzaGlwLCBBcHAgc2hpcHBpbmcgKFJvbWluZHIpLCBoaWdoIHByZXNzdXJlIGNhcGFiaWxpdHkuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4="
         };
 
         let input = "";
 
+        // Function returns string if Override detected, else null
         function checkSecurityOverrides(rawInput) {
             const clean = rawInput.trim().toUpperCase();
             
-            // JGCKS - GOD MODE
-            if (btoa(clean) === "SkdDS1M=") {
-                term.write("\r\n\x1b[33mSYSTEM ALERT: GOD_MODE UNLOCKED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.GOD);
-                return true;
-            }
+            if (btoa(clean) === "SkdDS1M=") return atob(PROMPTS.GOD);
+            if (clean.includes("TESS SULLIVAN")) return atob(PROMPTS.TESS);
+            if (clean.includes("RILEY JACKMAN")) return atob(PROMPTS.RILEY);
+            if (clean.includes("JAMIE GOLDBERG")) return atob(PROMPTS.JAMIE);
+            if (clean.includes("MEG TANCREDE")) return atob(PROMPTS.MEG);
+            if (clean.includes("PAIGE MARSHALL")) return atob(PROMPTS.PAIGE);
+            if (clean.includes("REAGAN GOULD")) return atob(PROMPTS.REAGAN);
+            if (clean.includes("BRODIE BURGUN")) return atob(PROMPTS.BRODIE);
             
-            // Specific People Checks
-            if (clean.includes("TESS SULLIVAN")) {
-                term.write("\r\n\x1b[36mIDENTITY: TESS SULLIVAN (GM) CONFIRMED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.TESS);
-                return true;
-            }
-            if (clean.includes("RILEY JACKMAN")) {
-                term.write("\r\n\x1b[35mIDENTITY: RILEY JACKMAN (SEC) CONFIRMED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.RILEY);
-                return true;
-            }
-            if (clean.includes("JAMIE GOLDBERG")) {
-                term.write("\r\n\x1b[34mIDENTITY: JAMIE GOLDBERG (VP) CONFIRMED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.JAMIE);
-                return true;
-            }
-            if (clean.includes("MEG TANCREDE")) {
-                term.write("\r\n\x1b[37mIDENTITY: MEG TANCREDE (PICTURES) CONFIRMED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.MEG);
-                return true;
-            }
-            if (clean.includes("PAIGE MARSHALL")) {
-                term.write("\r\n\x1b[31mIDENTITY: PAIGE MARSHALL (PEM) CONFIRMED. hi.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.PAIGE);
-                return true;
-            }
-            if (clean.includes("REAGAN GOULD")) {
-                term.write("\r\n\x1b[32mIDENTITY: REAGAN GOULD (ASST) CONFIRMED. ACCESS GRANTED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.REAGAN);
-                return true;
-            }
-            if (clean.includes("BRODIE BURGUN")) {
-                term.write("\r\n\x1b[33mIDENTITY: BRODIE BURGUN CONFIRMED. GOOBER PROTOCOL.\x1b[0m\r\n");
-                activeSystemPrompt = atob(PROMPTS.BRODIE);
-                return true;
-            }
-
-            // Hiring Check
             const hiring = ["HIRING", "RECRUITER", "JOB", "INTERVIEW"];
-            if (hiring.some(word => clean.includes(word))) {
-                activeSystemPrompt = atob(PROMPTS.SALES);
-                return false; // Silent switch
-            }
+            if (hiring.some(word => clean.includes(word))) return atob(PROMPTS.SALES);
             
-            // Log any other name for future reference (simulated)
-            return false;
+            return null;
         }
 
         term.onData(async e => {
-            // Check if model isn't ready
             if (!isModelLoaded) {
-                // WARN user if they hit enter before it's ready
-                if (e === "\r") {
-                    term.write("\r\n\x1b[33m[SYSTEM]: Neural Link not ready. Standby...\x1b[0m\r\n$ ");
-                }
+                if (e === "\r") term.write("\r\n\x1b[33m[SYSTEM]: Neural Link not ready. Standby...\x1b[0m\r\n$ ");
                 return;
             }
-            
-            // Block input if busy thinking
             if (isProcessing) return;
 
             if (e === "\r") {
                 isProcessing = true;
-                checkSecurityOverrides(input);
+                
+                // CHECK FOR OVERRIDE & RESET CHAT IF FOUND
+                const newPrompt = checkSecurityOverrides(input);
+                if (newPrompt) {
+                    await engine.resetChat(); // CRITICAL FIX: Wipes memory of "Guest" chat
+                    activeSystemPrompt = newPrompt;
+                    term.write("\r\n\x1b[32m[IDENTITY RECOGNIZED]: SWITCHING PROTOCOLS...\x1b[0m\r\n");
+                }
+
                 term.write("\r\n\x1b[2mZIGGY:\x1b[0m Thinking...\r\n");
                 
                 try {
@@ -647,13 +589,13 @@
                             { role: "system", content: activeSystemPrompt },
                             { role: "user", content: input }
                         ],
-                        temperature: 0.1 // LOW TEMP to prevent hallucination
+                        temperature: 0.1, // Strict logic
+                        max_tokens: 60    // HARD CUTOFF to prevent yapping
                     });
                     term.write(`\r\x1b[K> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
                     term.write("\r\nERR_SYS: Chat processing failed.\r\n$ ");
                 } finally {
-                    // CRITICAL FIX: Always unlock keyboard, even if error
                     isProcessing = false;
                     input = "";
                 }
@@ -670,13 +612,12 @@
 
         const initProgressCallback = (report) => {
             const percent = Math.round(report.progress * 100) || 0;
-            // SHORTENED loading text to prevent wrapping
             term.write(`\r\x1b[K[LOAD]: ${percent}%`);
         };
 
         try {
             engine.setInitProgressCallback(initProgressCallback);
-            // SWITCHED TO LLAMA 3.2 1B (Much faster, ~900MB)
+            // Switched to Llama-3.2-1B for speed and conciseness
             await engine.reload("Llama-3.2-1B-Instruct-q4f16_1-MLC");
             
             isModelLoaded = true;
