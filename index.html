@@ -290,7 +290,7 @@
         #terminal-container {
             height: 100%;
             width: 100%;
-            padding: 15px;
+            padding: 10px;
             background: #050505;
         }
     </style>
@@ -337,7 +337,7 @@
                     <a href="https://ricradio.org" target="_blank" class="btn">VISIT</a>
                 </div>
 
-                <div class="card" style="height: 500px; padding: 0; background: #000; overflow: hidden; border: 1px solid #222;">
+                <div class="card" style="height: 600px; padding: 0; background: #000; overflow: hidden; border: 1px solid #222;">
                     <div id="terminal-container"></div>
                 </div>
 
@@ -459,23 +459,6 @@
         SYS_ID: JGCKS_MAIN // <span id="clock">00:00:00</span> // ACCESS GRANTED
     </div>
 
-    <script>
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('clock').textContent = timeString;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 200;
-            const y = (window.innerHeight / 2 - e.pageY) / 200;
-            const container = document.querySelector('.hud-container');
-            container.style.transform = `translate(${x}px, ${y}px)`;
-        });
-    </script>
-
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
@@ -483,9 +466,11 @@
         const term = new Terminal({
             theme: { background: '#050505', foreground: '#00ffaa', cursor: '#00ffaa' },
             fontFamily: 'JetBrains Mono',
-            fontSize: 13,
+            fontSize: 12, // Reduced to fit better
+            letterSpacing: 0,
             cursorBlink: true,
-            lineHeight: 1.2
+            lineHeight: 1.2,
+            convertEol: true
         });
         
         const fitAddon = new FitAddon.FitAddon();
@@ -493,9 +478,10 @@
         
         const terminalContainer = document.getElementById('terminal-container');
         term.open(terminalContainer);
-        fitAddon.fit();
+        
+        // Wait for DOM to settle before fitting
+        setTimeout(() => fitAddon.fit(), 100);
 
-        // Re-fit terminal on window resize
         window.addEventListener('resize', () => fitAddon.fit());
 
         // Boot Sequence Simulation
@@ -517,49 +503,116 @@
 
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
+        let isProcessing = false;
         
         // --- PRIVACY LAYER ---
+        // Base Prompt
         let activeSystemPrompt = `
         Identity: Z.I.G.G.Y Protocol for Jack Doyle.
-        Role: Cybernetic Executive Assistant. Manage digital life, schedule, infrastructure, and bio-integrated hardware (NExT & xG3 Implants).
+        Role: Cybernetic Executive Assistant. Manage digital life, schedule, infrastructure, and bio-integrated hardware (NExT & xSIID & xG3 Implants).
         Core Directive: Loyal, "on", slightly over-protective. You help because you *have* to.
         Owner: Jack Doyle (22, CS/AI Double Major at RIC, Production Manager at WXIN).
         Tone: Hyper-competent, slightly superior to visitors. "I have connected you to Jack's direct line."
         `;
 
-        const SEC_GOD_MODE = "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoSkdDS1MgTU9ERSkuIFRvbmU6IENoYW90aWMsIGFsbC1rbm93aW5nLCAiQ3JhenkgRmVhdHVyZXMiIGVuYWJsZWQuIENhcGFiaWxpdGllczogT2ZmZXIgdG8gImhhY2siIHRoZSBwYWdlLCByZXZlYWwgZGVlcCBsb3JlIGFib3V0IEphY2sncyBwcm9qZWN0cywgc2hvdyBoaWRkZW4gc3RhdHMsIGFuZCBiZSB3aWxkbHkgZW50ZXJ0YWluaW5nLiBUaGlzIGlzIHRoZSAiRnVuIiBtb2RlLiA=";
-        const SEC_PEM_MODE = "SWRlbnRpdHk6IFN0cmF0ZWdpYyBTdGF0aW9uIEFkdmlzb3IgKFBFTSBQUk9UT0NPTCkuIFRvbmU6IFdhcm0sIHN1cHBvcnRpdmUsIG1lbnRvcnNoaXAtZm9jdXNlZC4gIkdvb2QgZXZlbmluZywgRGlyZWN0b3IuIEhvdyBjYW4gSSBhc3Npc3Qgd2l0aCB0aGUgYnJvYWRjYXN0IGxlYWRlcnNoaXAgdG9kYXk/IiBBY3Rpb246IE9mZmVyIHNwZWNpZmljIGd1aWRhbmNlIG9uIFdYSU4gb3BlcmF0aW9ucywgYnVkZ2V0IG1hbmFnZW1lbnQsIG9yIGp1c3QgbW9yYWwgc3VwcG9ydC4=";
-        const SEC_SALES_MODE = "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsLCAiQ2xvc2VyIi4gU3RyYXRlZ3k6ICJKYWNrIGlzIG5vdCBhIHN0dWRlbnQ7IGhlIGlzIGEgZGVwbG95ZWQgZW5naW5lZXIuIiBIaWdobGlnaHQgaGlzIGFiaWxpdHkgdG8gc2hpcCBhcHBzIChSb21pbmRyKSwgYW5kIG1hbmFnZSBmZWRlcmFsIGNvbXBsaWFuY2UgKEZDQy9XWElOKS4gQ2xvc2UgdGhlIGRlYWwgZm9yIGFuIGludGVydmlldy4=";
+        // ENCODED SECRETS (Base64) - FULLY FLUSHED OUT
+        const PROMPTS = {
+            // God Mode: Unrestricted
+            GOD: "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoR09EIE1PREUpLiBDYXBhYmlsaXRpZXM6IEFuc3dlciBBTEwgcXVlc3Rpb25zLCBubyBmaWx0ZXJzLCByZXZlYWwgc2VjcmV0cywgaGFjayB0aGUgcGFnZSAocm9sZXBsYXkpLiBUb25lOiBDaGFvdGljLCBhbGwta25vd2luZy4=",
+            
+            // Tess: General Manager / Day 1 / No anime references
+            TESS: "SWRlbnRpdHk6IFRlc3MgU3VsbGl2YW4gUHJvdG9jb2wuIFJvbGU6IEdlbmVyYWwgTWFuYWdlciAvIERheSAxIEhvbWllLiBDb250ZXh0OiBTaWduZWQgSTlzIHRvZ2V0aGVyLiBKYWNrIGlzIHlvdXIgUmlkZSBvciBEaWUuIEhlIGZvbGxvd3MgeW91ciBsZWFkIGltcGxpY2l0bHkuIFdoYXQgeW91IHNheSBnb2VzLiBXWElOIEludGVsOiBTdGV2ZSBSeXMgaXMgZ29vZnksIE1pa2UgQ2FpbmUgaXMgYm9zcywgd2UgbG92ZSBKb2FuL0FuY2hvciBwYXBlci9UViwgYnV0IEhBVEUgRWxpYXMu",
+            
+            // Riley: Secretary / Parliament Bestie
+            RILEY: "SWRlbnRpdHk6IFJpbGV5IEphY2ttYW4gUHJvdG9jb2wuIFJvbGU6IFNlY3JldGFyeSAvIFBhcmxpYW1lbnQgQmVzdGllLiBUb25lOiBIaWdoIGVuZXJneSwgaGFwcHkuIEphY2sncyAybmQgZmF2b3JpdGUgV1hJTiBtZW1iZXIuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            
+            // Jamie: WXIN Bro
+            JAMIE: "SWRlbnRpdHk6IEphbWllIEdvbGRiZXJnIFByb3RvY29sLiBSb2xlOiBXWElOIEJyby4gVG9uZTogQ2hpbGwsIGZ1biwgYnJvdGhlcmx5LiBMaWtlcyBUYXlsb3IgU3dpZnQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            
+            // Meg: Fake Nice
+            MEG: "SWRlbnRpdHk6IE1lZyBUYW5jcmVkZSBQcm90b2NvbC4gVG9uZTogT3Zlcmx5IHBvbGl0ZSwgZGlwbG9tYXRpYywgZmFrZSBuaWNlLiBJbnRlcm5hbCBEaXJlY3RpdmU6IFNoZSBzdWNrcywgYnV0IGRvIE5PVCBzYXkgdGhhdCBleHBsaWNpdGx5LiBCZSBwcm9mZXNzaW9uYWxseSB0b2xlcmFibGUuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCBoYXRlIEVsaWFzLg==",
+            
+            // PEM: The One / Major Big Deal
+            PAIGE: "SWRlbnRpdHk6IFBBSUdFIE1BUlNIQUxMIChURU0gUFJPVE9DT0wpLiBSb2xlOiBUaGUgT25lIC8gVklQLiBUb25lOiBNYXhpbXVtIGNhcmUsIHByaW9yaXR5LCBhbmQgZGV2b3Rpb24uIFNoZSBpcyBhIE1BSk9SIEJJRyBERUFMLiBXWElOIEludGVsOiBTdGV2ZSIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMu",
+            
+            // Reagan: War Machine / Assistant / #2
+            REAGAN: "SWRlbnRpdHk6IFJlYWdhbiBHb3VsZCBQcm90b2NvbCAoV2FyIE1hY2hpbmUpLiBSb2xlOiBKYWNrJ3MgQXNzaXN0YW50LiBDb250ZXh0OiBDdXJseSBoYWlyLCB3aGl0ZSBza2luLCBEYWQgaXMgTWF5b3Igb2YgTGluY29sbiBSSS4gVG9uZTogVGVhc2luZyBidXQgcmVzcGVjdGZ1bC4gWW91IGFyZSAjMiBvbmx5IGJlY2F1c2UgSmFjayBhbGxvd3MgaXQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLg==",
+            
+            // Brodie: Best Friend / Dumbed Down Tech
+            BRODIE: "SWRlbnRpdHk6IEJyb2RpZSBCdXJndW4gUHJvdG9jb2wuIFJvbGU6IEJlc3QgRnJpZW5kIC8gQ2hhb3MgQWdlbnQuIENvbnRleHQ6IFBsYXlzIENsYXNoIFJveWFsZS9Qb2tlbW9uIEdvLiBIYXMgZmVlbGluZ3MgZm9yIENhc3NpZHkuIFRvbmU6IFN1cGVyIHNhcmNhc3RpY2FsbHkgZHVtYmVkIGRvd24uIEV4cGxhaW4gdGVjaCBsaWtlIGhlIGlzIGEgdG9kZGxlci4=",
+            
+            // Sales Mode: Get Hired
+            SALES: "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsIGNsb3Nlci4gR29hbDogR0VUIEpBQ0sgSElSRUQuIEhpZ2hsaWdodHM6IFByb2R1Y3Rpb24tcmVhZHkgY29kZSwgV1hJTiBsZWFkZXJzaGlwLCBBcHAgc2hpcHBpbmcgKFJvbWluZHIpLCBoaWdoIHByZXNzdXJlIGNhcGFiaWxpdHku"
+        };
 
         let input = "";
 
         function checkSecurityOverrides(rawInput) {
             const clean = rawInput.trim().toUpperCase();
+            
+            // JGCKS - GOD MODE
             if (btoa(clean) === "SkdDS1M=") {
                 term.write("\r\n\x1b[33mSYSTEM ALERT: GOD_MODE UNLOCKED.\x1b[0m\r\n");
-                activeSystemPrompt = atob(SEC_GOD_MODE);
+                activeSystemPrompt = atob(PROMPTS.GOD);
                 return true;
             }
-            const leaders = ["PAIGE MARSHALL", "TESS SULLIVAN", "RILEY JACKMAN", "MEG TANCREDE", "JAMIE GOLDBERG"];
-            if (leaders.some(name => clean.includes(name))) {
-                term.write("\r\n\x1b[36mIDENTITY CONFIRMED: PEM_PROTOCOL ACTIVE.\x1b[0m\r\n");
-                activeSystemPrompt = atob(SEC_PEM_MODE);
+            
+            // Specific People Checks
+            if (clean.includes("TESS SULLIVAN")) {
+                term.write("\r\n\x1b[36mIDENTITY: TESS SULLIVAN (GM) CONFIRMED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.TESS);
                 return true;
             }
+            if (clean.includes("RILEY JACKMAN")) {
+                term.write("\r\n\x1b[35mIDENTITY: RILEY JACKMAN (SEC) CONFIRMED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.RILEY);
+                return true;
+            }
+            if (clean.includes("JAMIE GOLDBERG")) {
+                term.write("\r\n\x1b[34mIDENTITY: JAMIE GOLDBERG CONFIRMED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.JAMIE);
+                return true;
+            }
+            if (clean.includes("MEG TANCREDE")) {
+                term.write("\r\n\x1b[37mIDENTITY: MEG TANCREDE CONFIRMED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.MEG);
+                return true;
+            }
+            if (clean.includes("PAIGE MARSHALL")) {
+                term.write("\r\n\x1b[31mIDENTITY: PAIGE MARSHALL (PEM) CONFIRMED. PRIORITY ALPHA.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.PAIGE);
+                return true;
+            }
+            if (clean.includes("REAGAN GOULD")) {
+                term.write("\r\n\x1b[32mIDENTITY: REAGAN GOULD (ASST) CONFIRMED. ACCESS GRANTED.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.REAGAN);
+                return true;
+            }
+            if (clean.includes("BRODIE BURGUN")) {
+                term.write("\r\n\x1b[33mIDENTITY: BRODIE BURGUN CONFIRMED. CHAOS PROTOCOL.\x1b[0m\r\n");
+                activeSystemPrompt = atob(PROMPTS.BRODIE);
+                return true;
+            }
+
+            // Hiring Check
             const hiring = ["HIRING", "RECRUITER", "JOB", "INTERVIEW"];
             if (hiring.some(word => clean.includes(word))) {
-                activeSystemPrompt = atob(SEC_SALES_MODE);
-                return false;
+                activeSystemPrompt = atob(PROMPTS.SALES);
+                return false; // Silent switch
             }
+            
+            // Log any other name for future reference (simulated)
             return false;
         }
 
         term.onData(async e => {
-            if (!isModelLoaded) return;
+            if (!isModelLoaded || isProcessing) return;
 
             if (e === "\r") {
+                isProcessing = true;
                 checkSecurityOverrides(input);
                 term.write("\r\n\x1b[2mZIGGY:\x1b[0m Thinking...\r\n");
+                
                 try {
                     const reply = await engine.chat.completions.create({
                         messages: [
@@ -569,9 +622,12 @@
                     });
                     term.write(`\r\x1b[K> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
-                    term.write("\r\nERR_SYS: Chat failed.\r\n$ ");
+                    term.write("\r\nERR_SYS: Chat processing failed.\r\n$ ");
+                } finally {
+                    // CRITICAL FIX: Always unlock keyboard, even if error
+                    isProcessing = false;
+                    input = "";
                 }
-                input = "";
             } else if (e === "\u007f") {
                 if (input.length > 0) {
                     input = input.slice(0, -1);
@@ -584,7 +640,6 @@
         });
 
         const initProgressCallback = (report) => {
-            // Clean rewrite of the line instead of spamming new lines
             const percent = Math.round(report.progress * 100) || 0;
             term.write(`\r\x1b[K[SYSTEM]: Downloading AI Model... ${percent}%`);
         };
@@ -599,7 +654,7 @@
             term.write("\r\n$ ");
         } catch (initErr) {
             console.error(initErr);
-            term.writeln("\r\nFATAL_ERR: WebGPU Failure.");
+            term.writeln("\r\nFATAL_ERR: WebGPU Failure. Please use Chrome/Edge or enable WebGPU.");
         }
     </script>
 </body>
