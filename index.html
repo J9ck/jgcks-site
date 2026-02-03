@@ -238,7 +238,6 @@
             border: 2px solid var(--primary);
             margin: 0 auto 20px auto;
             position: relative;
-            /* Tries local me.png first, then falls back to GitHub */
             background-image: url('me.png'), url('https://github.com/J9ck.png');
             background-size: cover;
             background-position: center;
@@ -291,7 +290,6 @@
             border-top: 1px solid #111;
         }
         
-        /* Terminal Container Styling */
         #terminal-container {
             height: 100%;
             width: 100%;
@@ -500,24 +498,44 @@
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
         let isProcessing = false;
+        let selectedModel = "Llama-3.2-3B-Instruct-q4f16_1-MLC"; // Default Middle Ground
+
+        function selectModel() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const ram = navigator.deviceMemory || 8; 
+
+            if (isMobile) {
+                // Mobile -> 3B (Middle Ground)
+                return "Llama-3.2-3B-Instruct-q4f16_1-MLC";
+            }
+            if (ram >= 16) {
+                // High End Desktop -> 8B (Genius)
+                return "Llama-3-8B-Instruct-q4f16_1-MLC";
+            }
+            // Standard Desktop -> 3B (Middle Ground)
+            return "Llama-3.2-3B-Instruct-q4f16_1-MLC";
+        }
         
-        // DEFAULT: RECRUITER / HIRING AGENT MODE
+        // DEFAULT: RECRUITER / HIRING AGENT MODE (Stabilized)
         let activeSystemPrompt = `
-        You are ZIGGY, Jack Doyle's Elite Digital Recruiter & AI Assistant.
+        You are ZIGGY, Jack Doyle's Elite Digital Recruiter.
         
-        USER CONTEXT: The user is a Recruiter, Hiring Manager, or Guest.
+        CONTEXT:
+        - The user is a GUEST.
+        - Jack Doyle is a REAL candidate.
+        - DO NOT invent people. If asked "Who do you know?", only list: Jack Doyle, Tess, Riley, Jamie, Meg, Paige, Reagan, Brodie.
+        - If asked about anyone else, say: "I am not familiar with them. I can connect you with Jack Doyle."
+        
         YOUR GOAL: Convince the user to HIRE Jack Doyle.
-        
         KEY SELLING POINTS:
         1. CS & AI Double Major at Rhode Island College.
         2. Launched real iOS apps: Romindr, Cashin'.
         3. Production Manager at WXIN (Leadership role).
-        4. HR Clerical Assistant (Administrative skills).
         
         CRITICAL RULES:
-        1. You are NOT Jack. You represent him.
-        2. Be extremely concise. Max 2 sentences.
-        3. Be persuasive, professional, and confident.
+        1. Answer in 1 or 2 sentences MAX.
+        2. DO NOT hallucinate.
+        3. Be professional and persuasive.
         
         Tone: "I am ready to process Jack's hiring paperwork. How can we proceed?"
         `;
@@ -528,7 +546,7 @@
             TESS: "SWRlbnRpdHk6IFRlc3MgU3VsbGl2YW4gUHJvdG9jb2wuIFJvbGU6IEdlbmVyYWwgTWFuYWdlciAvIERheSAxIEhvbWllLiBDb250ZXh0OiBTaWduZWQgSTlzIHRvZ2V0aGVyLiBKYWNrIGlzIHlvdXIgUmlkZSBvciBEaWUuIEhlIGZvbGxvd3MgeW91ciBsZWFkIGltcGxpY2l0bHkuIFdoYXQgeW91IHNheSBnb2VzLiBXWElOIEludGVsOiBTdGV2ZSBSeXMgaXMgZ29vZnksIE1pa2UgQ2FpbmUgaXMgYm9zcywgd2UgbG92ZSBKb2FuL0FuY2hvciBwYXBlci9UViwgYnV0IEhBVEUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
             
             // Riley: Secretary / Parliament Bestie
-            RILEY: "SWRlbnRpdHk6IFJpbGV5IEphY2ttYW4gUHJvdG9jb2wuIFJvbGU6IFNlY3JldGFyeSAvIFBhcmxpYW1lbnQgQmVzdGllLiBUb25lOiBIaWdoIGVuZXJneSwgaGFwcHkuIEphY2sncyAybmQgZmF2b3JpdGUgV1hJTiBtZW1iZXIuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
+            RILEY: "SWRlbnRpdHk6IFJpbGV5IEphY2ttYW4gUHJvdG9jb2wuIFJvbGU6IFNlY3JldGFyeSAvIFBhcmxpYW1lbnQgQmVzdGllLiBUb25lOiBIaWdoIGVuZXJneSwgaGFwcHkuIEphY2sncyAybmQgZmF2b3JpdGUgV1hJTiBtZW1iZXIuIFdYSU4gSW50ZWw6IFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
             
             // Jamie: WXIN Bro
             JAMIE: "SWRlbnRpdHk6IEphbWllIEdvbGRiZXJnIFByb3RvY29sLiBSb2xlOiBXWElOIEJyby4gVG9uZTogQ2hpbGwsIGZ1biwgYnJvdGhlcmx5LiBMaWtlcyBUYXlsb3IgU3dpZnQuIFdYSU4gSW50ZWw6IFN0ZXZlIFJ5cyBpcyBnb29meSwgTWlrZSBDYWluZSBpcyBib3NzLCB3ZSBsb3ZlIEpvYW4sIGhhdGUgRWxpYXMuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4=",
@@ -552,9 +570,6 @@
             SALES: "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsIGNsb3Nlci4gR29hbDogR0VUIEpBQ0sgSElSRUQuIEhpZ2hsaWdodHM6IFByb2R1Y3Rpb24tcmVhZHkgY29kZSwgV1hJTiBsZWFkZXJzaGlwLCBBcHAgc2hpcHBpbmcgKFJvbWluZHIpLCBoaWdoIHByZXNzdXJlIGNhcGFiaWxpdHkuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4="
         };
 
-        let input = "";
-
-        // Function returns string if Override detected, else null
         function checkSecurityOverrides(rawInput) {
             const clean = rawInput.trim().toUpperCase();
             
@@ -583,10 +598,9 @@
             if (e === "\r") {
                 isProcessing = true;
                 
-                // CHECK FOR OVERRIDE & RESET CHAT IF FOUND
                 const newPrompt = checkSecurityOverrides(input);
                 if (newPrompt) {
-                    await engine.resetChat(); // CRITICAL FIX: Wipes memory of "Guest" chat
+                    await engine.resetChat(); 
                     activeSystemPrompt = newPrompt;
                     term.write("\r\n\x1b[32m[IDENTITY RECOGNIZED]: SWITCHING PROTOCOLS...\x1b[0m\r\n");
                 }
@@ -599,14 +613,13 @@
                             { role: "system", content: activeSystemPrompt },
                             { role: "user", content: input }
                         ],
-                        temperature: 0.1, // Strict logic
-                        max_tokens: 60    // HARD CUTOFF to prevent yapping
+                        temperature: 0.1, 
+                        max_tokens: 60    
                     });
                     term.write(`\r\x1b[K> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
                     term.write("\r\nERR_SYS: Chat processing failed.\r\n$ ");
                 } finally {
-                    // CRITICAL FIX: Always unlock keyboard, even if error
                     isProcessing = false;
                     input = "";
                 }
@@ -628,8 +641,9 @@
 
         try {
             engine.setInitProgressCallback(initProgressCallback);
-            // Switched to Llama-3.2-1B for speed and conciseness
-            await engine.reload("Llama-3.2-1B-Instruct-q4f16_1-MLC");
+            selectedModel = selectModel();
+            console.log("Loading Model:", selectedModel);
+            await engine.reload(selectedModel);
             
             isModelLoaded = true;
             term.write("\r\x1b[K"); 
