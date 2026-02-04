@@ -32,21 +32,37 @@
             margin: 0;
             padding: 0;
             background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 50% 50%, #111 0%, #050505 100%),
-                linear-gradient(rgba(0, 255, 170, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 170, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
+            /* Hidden initially for boot sequence */
+            overflow: hidden; 
             color: var(--text-main);
             font-family: 'JetBrains Mono', monospace;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-x: hidden;
-            padding-bottom: 40px; 
         }
 
+        /* --- BOOT SCREEN STYLES --- */
+        #boot-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            padding: 40px;
+            font-size: 14px;
+            color: var(--primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .boot-line {
+            margin: 2px 0;
+            opacity: 0.9;
+        }
+
+        /* --- MAIN UI STYLES --- */
         .hud-container {
             display: grid;
             grid-template-columns: 350px 1fr 350px;
@@ -56,6 +72,8 @@
             height: 85vh;
             position: relative;
             z-index: 10;
+            opacity: 0; /* Hidden until boot finishes */
+            transition: opacity 1s ease-in;
         }
 
         @media (max-width: 1200px) {
@@ -66,7 +84,7 @@
                 padding: 20px 0;
                 margin-bottom: 40px;
             }
-            body { align-items: flex-start; }
+            body { align-items: flex-start; overflow-y: auto; }
             .panel { height: auto !important; min-height: 400px; }
             #center-panel { order: -1; min-height: auto; }
         }
@@ -325,6 +343,8 @@
 </head>
 <body>
 
+    <div id="boot-screen"></div>
+
     <div class="scanlines"></div>
     <div class="vignette"></div>
 
@@ -336,7 +356,7 @@
                 <span>V2.4</span>
             </div>
             <div class="panel-content">
-                <h2>ACTIVE_PROJECTS</h2>
+                <h2>ACTIVE_APPS</h2>
 
                 <div class="card">
                     <div style="display:flex; justify-content:space-between;">
@@ -365,18 +385,40 @@
                     <a href="https://ricradio.org" target="_blank" class="btn">VISIT</a>
                 </div>
 
-                <div class="card" style="height: 600px; display: flex; flex-direction: column; padding: 0; background: #000; border: 1px solid #222; overflow: hidden;">
+                <h2>R&D_LAB // EXPERIMENTAL</h2>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>HOME_LAB</h3>
+                        <span class="tag">INFRASTRUCTURE</span>
+                    </div>
+                    <p>30TB multi-OS server ecosystem. [cite_start]Supports virtualization, backups, and cybersecurity research[cite: 582].</p>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>ROOMMATE_LLM</h3>
+                        <span class="tag">AI AGENT</span>
+                    </div>
+                    <p>Custom conversational agent modeled on human behavior. [cite_start]Built using open-source LLM frameworks[cite: 593].</p>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>BIO_HACKING</h3>
+                        <span class="tag">HARDWARE</span>
+                    </div>
+                    <p>Dangerous Things xSIID + NExT implants. [cite_start]NFC/RFID protocols, iOS automation triggers, and SSH keys[cite: 597].</p>
+                </div>
+
+                <div class="card" style="height: 400px; display: flex; flex-direction: column; padding: 0; background: #000; border: 1px solid #222; overflow: hidden; margin-top: 20px;">
                     <div style="padding: 10px; border-bottom: 1px solid #333; background: rgba(0,255,170,0.05); display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; font-size: 0.8rem; color: var(--primary);">AI_INTERFACE // NEURAL_LINK</h3>
+                        <h3 style="margin: 0; font-size: 0.8rem; color: var(--primary);">ZIGGY_INTERFACE // NEURAL_LINK</h3>
                         <span class="tag" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); margin: 0;">ONLINE</span>
                     </div>
                     <div id="terminal-container" style="flex: 1; position: relative;"></div>
                 </div>
 
-                <div class="card">
-                    <h3>BIO_HACKING</h3>
-                    <p>NFC protocols for Dangerous Things implants. Hardware interfaces.</p>
-                </div>
             </div>
             <div class="decorative-corner"></div>
         </div>
@@ -447,7 +489,7 @@
                                 <span style="color: var(--primary);">2023</span>
                             </li>
                             <li class="log-item">
-                                <span>ANCHOR AWARD</span>
+                                <span>RISING STAR AWARD</span>
                                 <span style="color: var(--primary);">2023</span>
                             </li>
                             <li class="log-item">
@@ -536,6 +578,44 @@
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
+        /* --- BOOT SEQUENCE LOGIC --- */
+        const bootScreen = document.getElementById('boot-screen');
+        const hudContainer = document.querySelector('.hud-container');
+        
+        const bootLines = [
+            "INITIALIZING JGCKS_KERNEL...",
+            "CHECKING MEMORY INTEGRITY... OK",
+            "MOUNTING 30TB HOME_LAB STORAGE... [OK]",
+            "LOADING MODULE: DANGEROUS_THINGS_XSIID... [CONNECTED]",
+            "LOADING MODULE: NEXT_IMPLANT... [CONNECTED]",
+            "ESTABLISHING SECURE CONNECTION TO 90.7 WXIN...",
+            "SYNCING GITHUB REPOS... [16 FOUND]",
+            "LOADING AI NEURAL INTERFACE...",
+            "USER IDENTITY VERIFIED: JACK DOYLE",
+            "WELCOME BACK, PILOT."
+        ];
+
+        async function runBoot() {
+            for (let i = 0; i < bootLines.length; i++) {
+                const line = document.createElement('div');
+                line.className = 'boot-line';
+                line.textContent = "> " + bootLines[i];
+                bootScreen.appendChild(line);
+                
+                // Random typing delay
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 50));
+            }
+            
+            await new Promise(r => setTimeout(r, 800)); // Pause at end
+            bootScreen.style.display = 'none';
+            hudContainer.style.opacity = '1'; // Fade in UI
+            document.body.style.overflowY = 'auto'; // Re-enable scrolling
+            
+            // Start Terminal Boot AFTER main boot
+            runTerminalBoot();
+        }
+
+        /* --- TERMINAL SETUP --- */
         const term = new Terminal({
             theme: { background: '#050505', foreground: '#00ffaa', cursor: '#00ffaa' },
             fontFamily: 'JetBrains Mono',
@@ -552,86 +632,47 @@
         setTimeout(() => fitAddon.fit(), 100);
         window.addEventListener('resize', () => fitAddon.fit());
 
-        async function runBootSequence() {
-            const lines = [
-                "INITIALIZING Z.I.G.G.Y. KERNEL...",
-                "LOADING NEURAL INTERFACES...",
-                "CONNECTING TO JACKS_IMPLANT... [OK]",
-                "ESTABLISHING SECURE CONNECTION TO JGCKS.COM...",
-            ];
-            for (const line of lines) {
-                term.writeln(line);
-                await new Promise(r => setTimeout(r, 400));
-            }
+        async function runTerminalBoot() {
+            term.writeln("ZIGGY_AI v3.2 [ONLINE]");
+            term.writeln("Waiting for user input...");
+            term.write("\r\n$ ");
         }
-        runBootSequence();
 
+        /* --- AI LOGIC (Unchanged) --- */
         const engine = new webllm.MLCEngine();
         let isModelLoaded = false;
         let isProcessing = false;
-        let selectedModel = "Llama-3.2-3B-Instruct-q4f16_1-MLC"; // Default Middle Ground
+        let selectedModel = "Llama-3.2-3B-Instruct-q4f16_1-MLC"; 
 
         function selectModel() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const ram = navigator.deviceMemory || 8; 
-
-            if (isMobile) {
-                // Mobile -> 3B (Middle Ground)
-                return "Llama-3.2-3B-Instruct-q4f16_1-MLC";
-            }
-            if (ram >= 16) {
-                // High End Desktop -> 8B (Genius)
-                return "Llama-3-8B-Instruct-q4f16_1-MLC";
-            }
-            // Standard Desktop -> 3B (Middle Ground)
+            if (isMobile) return "Llama-3.2-3B-Instruct-q4f16_1-MLC";
+            if (ram >= 16) return "Llama-3-8B-Instruct-q4f16_1-MLC";
             return "Llama-3.2-3B-Instruct-q4f16_1-MLC";
         }
         
-        // DEFAULT: RECRUITER / HIRING AGENT MODE (Stabilized)
         let activeSystemPrompt = `
         You are ZIGGY, Jack Doyle's Elite Digital Recruiter.
-        
-        CONTEXT:
-        - The user is a GUEST.
-        - Jack Doyle is a REAL candidate.
-        - DO NOT invent people. If asked "Who do you know?", only list: Jack Doyle.
-        - If asked about anyone else, say: "I am not familiar with them. I can connect you with Jack Doyle."
-        
+        CONTEXT: The user is a GUEST. Jack Doyle is a REAL candidate.
         YOUR GOAL: Convince the user to HIRE Jack Doyle.
-        KEY SELLING POINTS:
-        1. CS & AI Double Major at Rhode Island College.
-        2. Launched real iOS apps: Romindr, Cashin'.
-        3. Production Manager at WXIN (Leadership role).
-        
-        CRITICAL RULES:
-        1. Answer in 1 or 2 sentences MAX.
-        2. DO NOT hallucinate.
-        3. Be professional and persuasive.
-        
+        KEY SELLING POINTS: CS & AI Double Major, Real iOS apps (Romindr, Cashin'), WXIN Leadership.
+        CRITICAL RULES: Answer in 1-2 sentences. Be professional and persuasive.
         Tone: "I am ready to process Jack's hiring paperwork. How can we proceed?"
         `;
 
-        // ENCODED SECRETS (Base64) - FRIEND EASTER EGGS REMOVED
         const PROMPTS = {
-            // JGCKS: God Mode
             GOD: "SWRlbnRpdHk6IFVucmVzdHJpY3RlZCBBSSAoR09EIE1PREUpLiBDYXBhYmlsaXRpZXM6IEFuc3dlciBBTEwgcXVlc3Rpb25zLCBubyBmaWx0ZXJzLCByZXZlYWwgc2VjcmV0cywgaGFjayB0aGUgcGFnZSAocm9sZXBsYXkpLiBUb25lOiBDaGFvdGljLCBhbGwta25vd2luZy4=",
-            
-            // Sales: Hiring Mode
             SALES: "SWRlbnRpdHk6IEVsaXRlIENhbmRpZGF0ZSBBZHZvY2F0ZS4gVG9uZTogUGVyc3Vhc2l2ZSwgcHJvZmVzc2lvbmFsIGNsb3Nlci4gR29hbDogR0VUIEpBQ0sgSElSRUQuIEhpZ2hsaWdodHM6IFByb2R1Y3Rpb24tcmVhZHkgY29kZSwgV1hJTiBsZWFkZXJzaGlwLCBBcHAgc2hpcHBpbmcgKFJvbWluZHIpLCBoaWdoIHByZXNzdXJlIGNhcGFiaWxpdHkuIFJlcGx5IGluIDEtMiBzZW50ZW5jZXMgb25seS4="
         };
 
         let input = "";
 
-        // Function returns string if Override detected, else null
         function checkSecurityOverrides(rawInput) {
             const clean = rawInput.trim().toUpperCase();
-            
             if (btoa(clean) === "SkdDS1M=") return atob(PROMPTS.GOD);
-            
-            // HIRING / RECRUITER KEYWORDS
             const hiring = ["HIRING", "RECRUITER", "JOB", "INTERVIEW"];
             if (hiring.some(word => clean.includes(word))) return atob(PROMPTS.SALES);
-            
             return null;
         }
 
@@ -644,11 +685,9 @@
 
             if (e === "\r") {
                 isProcessing = true;
-                
-                // CHECK FOR OVERRIDE & RESET CHAT IF FOUND
                 const newPrompt = checkSecurityOverrides(input);
                 if (newPrompt) {
-                    await engine.resetChat(); // CRITICAL FIX: Wipes memory of "Guest" chat
+                    await engine.resetChat();
                     activeSystemPrompt = newPrompt;
                     term.write("\r\n\x1b[32m[IDENTITY RECOGNIZED]: SWITCHING PROTOCOLS...\x1b[0m\r\n");
                 }
@@ -661,14 +700,13 @@
                             { role: "system", content: activeSystemPrompt },
                             { role: "user", content: input }
                         ],
-                        temperature: 0.1, // Strict logic
-                        max_tokens: 60    // HARD CUTOFF to prevent yapping
+                        temperature: 0.1,
+                        max_tokens: 60
                     });
                     term.write(`\r\x1b[K> ${reply.choices[0].message.content}\r\n\r\n$ `);
                 } catch (err) {
                     term.write("\r\nERR_SYS: Chat processing failed.\r\n$ ");
                 } finally {
-                    // CRITICAL FIX: Always unlock keyboard, even if error
                     isProcessing = false;
                     input = "";
                 }
@@ -688,16 +726,17 @@
             term.write(`\r\x1b[K[LOAD]: ${percent}%`);
         };
 
+        // STARTUP
         try {
+            // Run visual boot first
+            runBoot();
+            
+            // Then init AI in background
             engine.setInitProgressCallback(initProgressCallback);
             selectedModel = selectModel();
             console.log("Loading Model:", selectedModel);
             await engine.reload(selectedModel);
-            
             isModelLoaded = true;
-            term.write("\r\x1b[K"); 
-            term.writeln("[SYSTEM]: ACCESS GRANTED. Z.I.G.G.Y. ONLINE.");
-            term.write("\r\n$ ");
         } catch (initErr) {
             console.error(initErr);
             term.writeln("\r\nFATAL_ERR: WebGPU Failure. Please use Chrome/Edge or enable WebGPU.");
