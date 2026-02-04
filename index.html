@@ -178,7 +178,7 @@
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 10px; 
-            margin: 20px 0;
+            margin: 20px 0 15px 0; /* Reduced bottom margin slightly */
         }
 
         .card {
@@ -238,7 +238,6 @@
             border: 2px solid var(--primary);
             margin: 0 auto 20px auto;
             position: relative;
-            /* Tries local me.png first, then falls back to GitHub */
             background-image: url('me.png'), url('https://github.com/J9ck.png');
             background-size: cover;
             background-position: center;
@@ -291,12 +290,37 @@
             border-top: 1px solid #111;
         }
         
-        /* Terminal Container Styling */
         #terminal-container {
             height: 100%;
             width: 100%;
             padding: 10px;
             background: #050505;
+        }
+
+        /* Helper for the link list */
+        .log-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.65rem;
+            color: #aaa;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .log-item {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 2px;
+        }
+        .log-item a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .log-item a:hover {
+            color: var(--primary);
         }
     </style>
 </head>
@@ -342,8 +366,12 @@
                     <a href="https://ricradio.org" target="_blank" class="btn">VISIT</a>
                 </div>
 
-                <div class="card" style="height: 600px; padding: 0; background: #000; overflow: hidden; border: 1px solid #222;">
-                    <div id="terminal-container"></div>
+                <div class="card" style="height: 600px; display: flex; flex-direction: column; padding: 0; background: #000; border: 1px solid #222; overflow: hidden;">
+                    <div style="padding: 10px; border-bottom: 1px solid #333; background: rgba(0,255,170,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: 0.8rem; color: var(--primary);">ZIGGY_INTERFACE // NEURAL_LINK</h3>
+                        <span class="tag" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); margin: 0;">ONLINE</span>
+                    </div>
+                    <div id="terminal-container" style="flex: 1; position: relative;"></div>
                 </div>
 
                 <div class="card">
@@ -381,6 +409,10 @@
                     <a href="https://www.github.com/J9ck" target="_blank" class="btn btn-secondary">GITHUB</a>
                 </div>
 
+                <a href="https://app.cal.com/jgcks" target="_blank" class="btn" style="display: block; width: 100%; margin-bottom: 20px; text-align: center; border-color: var(--primary); color: var(--primary);">
+                    SCHEDULE SYNC // CAL.COM
+                </a>
+
                 <div style="text-align: left; margin-bottom: 20px;">
                     <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px;">CAPABILITIES</h3>
                     <div class="tech-grid">
@@ -399,6 +431,32 @@
                     <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">EDUCATION</h3>
                     <p style="margin-bottom: 5px; color: #fff;">RHODE ISLAND COLLEGE</p>
                     <p style="font-size: 0.7rem;">Double Major: Computer Science & AI<br>Minor: Cybersecurity</p>
+
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <h4 style="color: #fff; font-size: 0.7rem; margin: 0 0 8px 0;">AWARDS // PUBLICATIONS</h4>
+                        <ul class="log-list">
+                            <li class="log-item">
+                                <span>FALL 2025 DEAN'S LIST</span>
+                                <span style="color: var(--primary);">2026</span>
+                            </li>
+                            <li class="log-item">
+                                <a href="https://drive.google.com/file/d/1R3PVViaYRKHvGjxgIjIyZmHjhplvjDJO/view?usp=sharing" target="_blank">SNAPSHOT PROFILE (BU) [LINK]</a>
+                                <span style="color: var(--primary);">2025</span>
+                            </li>
+                            <li class="log-item">
+                                <a href="https://motifri.com/the-kids-are-alright/" target="_blank">MOTIF MAG: KIDS ARE ALRIGHT [LINK]</a>
+                                <span style="color: var(--primary);">2023</span>
+                            </li>
+                            <li class="log-item">
+                                <span>SCHOLARSHIP AWARD</span>
+                                <span style="color: var(--primary);">2023</span>
+                            </li>
+                            <li class="log-item">
+                                <span>ANCHOR AWARD</span>
+                                <span style="color: var(--primary);">2022</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div style="margin-top: auto;">
