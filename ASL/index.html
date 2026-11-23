@@ -2,31 +2,161 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
 <title>ASL Live — Jack Doyle</title>
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; }
-  #stage { position: relative; width: 100vw; height: 100vh; }
-  video { display: none; }
-  canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .glass { background: rgba(11,14,20,.78); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,.14); color: #f8fafc; }
-  .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; z-index: 20; }
-  .chip { padding: 7px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399; }
-  .island { flex: 1 1 180px; max-width: 300px; padding: 8px 14px; border-radius: 16px; text-align: center; }
-  #sign { font-size: 18px; font-weight: 800; letter-spacing: .06em; }
-  #sub { font-size: 11px; color: rgba(226,232,240,.65); margin-top: 2px; }
-  .track { height: 3px; background: rgba(255,255,255,.12); border-radius: 999px; margin-top: 6px; overflow: hidden; }
-  #bar { height: 100%; width: 0%; background: #38bdf8; transition: width 60ms linear; }
-  .btns { display: flex; gap: 6px; }
-  button.glass { padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
-  #speakBtn { border-color: rgba(52,211,153,.55); background: rgba(52,211,153,.18); }
-  .dock { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100vw - 24px)); padding: 12px 16px; border-radius: 18px; z-index: 20; }
-  #text { font-size: 22px; font-weight: 700; min-height: 28px; word-break: break-word; }
-  #text:empty::before { content: "Show your hand to fingerspell (hold steady to lock, trace J / Z)..."; color: rgba(226,232,240,.4); font-size: 14px; font-weight: 500; }
-  #meta { margin-top: 4px; font-size: 11px; color: rgba(226,232,240,.5); font-family: ui-monospace, monospace; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #07090d;
+    color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  }
+  #stage {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+  }
+  video {
+    display: none;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .glass {
+    background: rgba(11, 14, 20, 0.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #f8fafc;
+  }
+  .top {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    z-index: 20;
+  }
+  .chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+  }
+  .island {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    padding: 8px 14px;
+    border-radius: 16px;
+    text-align: center;
+  }
+  @media (min-width: 720px) {
+    .island {
+      order: 0;
+      width: auto;
+      flex: 1 1 200px;
+      max-width: 320px;
+    }
+  }
+  #sign {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+  #sub {
+    font-size: 11px;
+    color: rgba(226, 232, 240, 0.68);
+    margin-top: 2px;
+  }
+  .track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  #bar {
+    height: 100%;
+    width: 0%;
+    background: #38bdf8;
+    transition: width 60ms linear;
+  }
+  .btns {
+    display: flex;
+    gap: 6px;
+  }
+  button.glass {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  button.glass:active {
+    transform: scale(0.97);
+  }
+  #speakBtn {
+    border-color: rgba(52, 211, 153, 0.55);
+    background: rgba(52, 211, 153, 0.18);
+  }
+  .dock {
+    position: absolute;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(780px, calc(100vw - 24px));
+    padding: 12px 16px;
+    border-radius: 18px;
+    z-index: 20;
+  }
+  #text {
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: 700;
+    min-height: 28px;
+    word-break: break-word;
+  }
+  #text:empty::before {
+    content: "Show 1 or 2 hands to fingerspell (hold steady to lock, trace J / Z)...";
+    color: rgba(226, 232, 240, 0.42);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  #meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(226, 232, 240, 0.52);
+    font-family: ui-monospace, monospace;
+  }
 </style>
 </head>
 <body>
@@ -34,10 +164,10 @@
   <video id="cam" autoplay playsinline muted></video>
   <canvas id="view"></canvas>
   <div class="top">
-    <div class="chip glass"><span class="dot"></span>ASL LIVE <span id="fps" style="opacity:.6">0 FPS</span></div>
+    <div class="chip glass"><span class="dot"></span>ASL LIVE <span id="fps" style="opacity:.65">0 FPS</span></div>
     <div class="island glass">
       <div id="sign">LOADING...</div>
-      <div id="sub">Initializing MediaPipe + ONNX</div>
+      <div id="sub">Initializing MediaPipe (2 hands) + ONNX</div>
       <div class="track"><div id="bar"></div></div>
     </div>
     <div class="btns">
@@ -49,113 +179,217 @@
   </div>
   <div class="dock glass">
     <div id="text"></div>
-    <div id="meta">100% On-Device Browser Inference • MediaPipe Hands + PyTorch→ONNX Web • jgcks.com/ASL</div>
+    <div id="meta">2-Hand MediaPipe + On-Device ONNX Web • jgcks.com/ASL</div>
   </div>
 </div>
 <script type="module">
 import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm";
 
-const CONNS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-const TIPS = [4,8,12,16,20];
-const video = document.getElementById("cam"), canvas = document.getElementById("view"), ctx = canvas.getContext("2d");
-const off = document.createElement("canvas"), offCtx = off.getContext("2d");
+// Optional: set to your public HTTPS backend URL (e.g. "https://your-api.onrender.com") when hosted
+const BACKEND_URL = "";
+
+const CONNS = [
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  [5, 9], [9, 10], [10, 11], [11, 12],
+  [9, 13], [13, 14], [14, 15], [15, 16],
+  [13, 17], [17, 18], [18, 19], [19, 20],
+  [0, 17]
+];
+const TIPS = [4, 8, 12, 16, 20];
+const video = document.getElementById("cam");
+const canvas = document.getElementById("view");
+const ctx = canvas.getContext("2d");
+const off = document.createElement("canvas");
+const offCtx = off.getContext("2d");
+
 let handLM, session, classes = [], inDim = 68, outText = "", probBuf = [];
 let stableTok = null, stableStart = 0, cooldown = 0, busy = false, lastTs = performance.now();
 let jTrail = [], zTrail = [], jMiss = 0, zMiss = 0;
 
-const renderText = () => document.getElementById("text").textContent = outText;
-document.getElementById("spaceBtn").onclick = () => { outText += " "; renderText(); };
-document.getElementById("delBtn").onclick = () => { outText = outText.slice(0, -1); renderText(); };
-document.getElementById("clearBtn").onclick = () => { outText = ""; renderText(); };
-document.getElementById("speakBtn").onclick = () => {
-  if (outText.trim() && "speechSynthesis" in window) {
+const renderText = () => {
+  document.getElementById("text").textContent = outText;
+};
+document.getElementById("spaceBtn").onclick = () => {
+  outText += " ";
+  renderText();
+};
+document.getElementById("delBtn").onclick = () => {
+  outText = outText.slice(0, -1);
+  renderText();
+};
+document.getElementById("clearBtn").onclick = () => {
+  outText = "";
+  renderText();
+};
+document.getElementById("speakBtn").onclick = async () => {
+  const raw = outText.trim();
+  if (!raw) return;
+  let spoken = raw;
+  if (BACKEND_URL) {
+    try {
+      const r = await fetch(`${BACKEND_URL}/api/interpret`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: raw, emotion: "Neutral" })
+      });
+      if (r.ok) {
+        const j = await r.json();
+        if (j.sentence) {
+          spoken = j.sentence;
+          outText = j.sentence;
+          renderText();
+        }
+      }
+    } catch (_) {}
+  }
+  if ("speechSynthesis" in window) {
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(outText.trim()));
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(spoken));
   }
 };
 
 const d2 = (a, b, ax) => Math.hypot((a.x - b.x) * ax, a.y - b.y);
+
 function extractGeom(lms) {
   const ax = canvas.width / Math.max(1, canvas.height);
   const wx = lms[0].x, wy = lms[0].y, wz = lms[0].z;
   const rel = lms.map(p => [(p.x - wx) * ax, p.y - wy, (p.z - wz) * ax]);
   const s = Math.hypot(rel[9][0], rel[9][1], rel[9][2]) + 1e-6;
-  const norm = rel.map(p => [p[0]/s, p[1]/s, p[2]/s]);
+  const norm = rel.map(p => [p[0] / s, p[1] / s, p[2] / s]);
   const g = [];
   for (const p of norm) g.push(p[0], p[1], p[2]);
-  if (inDim === 68) for (const id of TIPS) g.push(Math.hypot(norm[id][0], norm[id][1], norm[id][2]));
+  if (inDim === 68) {
+    for (const id of TIPS) {
+      g.push(Math.hypot(norm[id][0], norm[id][1], norm[id][2]));
+    }
+  }
   return new Float32Array(g);
 }
 
 function refineUV(probs, g) {
-  const dist = (a, b) => Math.hypot(g[a*3]-g[b*3], g[a*3+1]-g[b*3+1], g[a*3+2]-g[b*3+2]);
-  const dot = (g[24]-g[36])*(g[15]-g[27]) + (g[25]-g[37])*(g[16]-g[28]);
+  const dot = (g[24] - g[36]) * (g[15] - g[27]) + (g[25] - g[37]) * (g[16] - g[28]);
   if (dot < 0) return;
   const iu = classes.indexOf("U"), iv = classes.indexOf("V");
   if (iu < 0 || iv < 0) return;
-  let bi = 0; for (let i = 1; i < probs.length; i++) if (probs[i] > probs[bi]) bi = i;
+  let bi = 0;
+  for (let i = 1; i < probs.length; i++) {
+    if (probs[i] > probs[bi]) bi = i;
+  }
   if (bi !== iu && bi !== iv) return;
+  const dist = (a, b) => Math.hypot(g[a * 3] - g[b * 3], g[a * 3 + 1] - g[b * 3 + 1], g[a * 3 + 2] - g[b * 3 + 2]);
   const mass = probs[iu] + probs[iv];
   const pV = 1 / (1 + Math.exp(-((dist(8, 12) / (dist(5, 9) + 1e-6)) - 1.42) * 10));
-  probs[iv] = mass * pV; probs[iu] = mass * (1 - pV);
+  probs[iv] = mass * pV;
+  probs[iu] = mass * (1 - pV);
 }
 
 function checkJZ(lms) {
-  const ax = canvas.width / Math.max(1, canvas.height), s = d2(lms[0], lms[9], ax) + 1e-6;
+  const ax = canvas.width / Math.max(1, canvas.height);
+  const s = d2(lms[0], lms[9], ax) + 1e-6;
   const pinkyUp = d2(lms[20], lms[0], ax) > d2(lms[18], lms[0], ax) * 1.15 && d2(lms[20], lms[17], ax) > s * 0.45;
   const idxUp = d2(lms[8], lms[0], ax) > d2(lms[6], lms[0], ax) * 1.25 && d2(lms[8], lms[5], ax) > s * 0.55;
   const curled = (t, m) => d2(lms[t], lms[0], ax) < d2(lms[m], lms[0], ax) * 1.32;
-  if (pinkyUp && curled(8,6) && curled(12,10) && curled(16,14)) {
-    jMiss = 0; jTrail.push({ x: lms[20].x * ax, y: lms[20].y }); if (jTrail.length > 26) jTrail.shift();
+
+  if (pinkyUp && curled(8, 6) && curled(12, 10) && curled(16, 14)) {
+    jMiss = 0;
+    jTrail.push({ x: lms[20].x * ax, y: lms[20].y });
+    if (jTrail.length > 26) jTrail.shift();
     if (jTrail.length >= 7) {
       let maxY = -1e9, maxI = 0;
-      for (let i = 0; i < jTrail.length; i++) if (jTrail[i].y > maxY) { maxY = jTrail[i].y; maxI = i; }
+      for (let i = 0; i < jTrail.length; i++) {
+        if (jTrail[i].y > maxY) {
+          maxY = jTrail[i].y;
+          maxI = i;
+        }
+      }
       const f = jTrail[0], l = jTrail[jTrail.length - 1];
-      if ((maxY - f.y)/s > 0.35 && Math.abs(l.x - f.x)/s > 0.28 && ((maxY - l.y)/s > 0.06 || Math.abs(l.x - jTrail[maxI].x)/s > 0.22)) { jTrail = []; zTrail = []; return "J"; }
+      if ((maxY - f.y) / s > 0.35 && Math.abs(l.x - f.x) / s > 0.28 && ((maxY - l.y) / s > 0.06 || Math.abs(l.x - jTrail[maxI].x) / s > 0.22)) {
+        jTrail = [];
+        zTrail = [];
+        return "J";
+      }
     }
-  } else if (++jMiss > 3) jTrail = [];
-  if (idxUp && curled(12,10) && curled(16,14) && curled(20,18)) {
-    zMiss = 0; zTrail.push({ x: lms[8].x * ax, y: lms[8].y }); if (zTrail.length > 34) zTrail.shift();
+  } else if (++jMiss > 3) {
+    jTrail = [];
+  }
+
+  if (idxUp && curled(12, 10) && curled(16, 14) && curled(20, 18)) {
+    zMiss = 0;
+    zTrail.push({ x: lms[8].x * ax, y: lms[8].y });
+    if (zTrail.length > 34) zTrail.shift();
     if (zTrail.length >= 10) {
-      const n = zTrail.length, p0 = zTrail[0], pn = zTrail[n-1];
+      const n = zTrail.length, p0 = zTrail[0], pn = zTrail[n - 1];
       for (let i1 = 2; i1 < n - 5; i1++) {
-        const dx1 = zTrail[i1].x - p0.x; if (Math.abs(dx1) < s * 0.30) continue;
+        const dx1 = zTrail[i1].x - p0.x;
+        if (Math.abs(dx1) < s * 0.30) continue;
         for (let i2 = i1 + 2; i2 < n - 2; i2++) {
-          const dx2 = zTrail[i2].x - zTrail[i1].x, dy2 = zTrail[i2].y - zTrail[i1].y, dx3 = pn.x - zTrail[i2].x;
-          if (dx1*dx2 < 0 && dx2*dx3 < 0 && Math.abs(dx2) > s*0.30 && Math.abs(dx3) > s*0.30 && dy2 > s*0.20) { jTrail = []; zTrail = []; return "Z"; }
+          const dx2 = zTrail[i2].x - zTrail[i1].x;
+          const dy2 = zTrail[i2].y - zTrail[i1].y;
+          const dx3 = pn.x - zTrail[i2].x;
+          if (dx1 * dx2 < 0 && dx2 * dx3 < 0 && Math.abs(dx2) > s * 0.30 && Math.abs(dx3) > s * 0.30 && dy2 > s * 0.20) {
+            jTrail = [];
+            zTrail = [];
+            return "Z";
+          }
         }
       }
     }
-  } else if (++zMiss > 3) zTrail = [];
+  } else if (++zMiss > 3) {
+    zTrail = [];
+  }
   return null;
 }
 
-function drawHand(lms, w, h) {
+function drawHand(lms, w, h, handIndex) {
   ctx.save();
-  ctx.strokeStyle = stableTok ? "rgba(52,211,153,.9)" : "rgba(56,189,248,.85)";
-  ctx.lineWidth = 2.2; ctx.lineCap = "round";
-  for (const [a, b] of CONNS) { ctx.beginPath(); ctx.moveTo(lms[a].x*w, lms[a].y*h); ctx.lineTo(lms[b].x*w, lms[b].y*h); ctx.stroke(); }
+  const activeColor = stableTok
+    ? "rgba(52, 211, 153, 0.92)"
+    : (handIndex === 0 ? "rgba(56, 189, 248, 0.9)" : "rgba(251, 191, 36, 0.85)");
+  ctx.strokeStyle = activeColor;
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  for (const [a, b] of CONNS) {
+    ctx.beginPath();
+    ctx.moveTo(lms[a].x * w, lms[a].y * h);
+    ctx.lineTo(lms[b].x * w, lms[b].y * h);
+    ctx.stroke();
+  }
   for (let i = 0; i < lms.length; i++) {
     const tip = TIPS.includes(i);
-    ctx.beginPath(); ctx.arc(lms[i].x*w, lms[i].y*h, tip ? 4.4 : 2.6, 0, Math.PI*2);
-    ctx.fillStyle = tip ? "#38bdf8" : "#0b0e14"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(lms[i].x * w, lms[i].y * h, tip ? 4.6 : 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = tip ? activeColor : "#0b0e14";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
   }
   ctx.restore();
 }
 
 async function init() {
   const meta = await (await fetch("./meta.json")).json();
-  classes = meta.classes; inDim = meta.in_dim;
+  classes = meta.classes;
+  inDim = meta.in_dim;
   session = await ort.InferenceSession.create("./letters.onnx", { executionProviders: ["wasm"] });
   const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
   handLM = await HandLandmarker.createFromOptions(vision, {
-    baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: "GPU" },
-    runningMode: "VIDEO", numHands: 1, minHandDetectionConfidence: 0.45
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+      delegate: "GPU"
+    },
+    runningMode: "VIDEO",
+    numHands: 2,
+    minHandDetectionConfidence: 0.45
   });
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } });
-  video.srcObject = stream; await video.play();
-  canvas.width = off.width = video.videoWidth; canvas.height = off.height = video.videoHeight;
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }
+  });
+  video.srcObject = stream;
+  await video.play();
+  canvas.width = off.width = video.videoWidth;
+  canvas.height = off.height = video.videoHeight;
   document.getElementById("sign").textContent = "READY";
   document.getElementById("sub").textContent = "Show hand to spell";
   requestAnimationFrame(loop);
@@ -168,10 +402,16 @@ async function predict(geom) {
     const res = await session.run({ landmarks: t });
     const probs = Array.from(res.probs.data);
     refineUV(probs, geom);
-    probBuf.push(probs); if (probBuf.length > 5) probBuf.shift();
+    probBuf.push(probs);
+    if (probBuf.length > 5) probBuf.shift();
     const avg = new Array(probs.length).fill(0);
-    for (const p of probBuf) for (let i = 0; i < p.length; i++) avg[i] += p[i] / probBuf.length;
-    let bi = 0; for (let i = 1; i < avg.length; i++) if (avg[i] > avg[bi]) bi = i;
+    for (const p of probBuf) {
+      for (let i = 0; i < p.length; i++) avg[i] += p[i] / probBuf.length;
+    }
+    let bi = 0;
+    for (let i = 1; i < avg.length; i++) {
+      if (avg[i] > avg[bi]) bi = i;
+    }
     const label = classes[bi], conf = avg[bi], now = performance.now();
     document.getElementById("sign").textContent = label;
     if (conf > 0.72 && label !== "NOTHING" && now > cooldown) {
@@ -179,35 +419,51 @@ async function predict(geom) {
         const pct = Math.min(100, ((now - stableStart) / 650) * 100);
         document.getElementById("bar").style.width = `${pct}%`;
         document.getElementById("bar").style.background = "#34d399";
-        document.getElementById("sub").textContent = `${Math.round(conf*100)}% — locking`;
+        document.getElementById("sub").textContent = `${Math.round(conf * 100)}% — locking`;
         if (pct >= 100) {
           if (label === "SPACE") outText += " ";
           else if (label === "DEL") outText = outText.slice(0, -1);
           else outText += label;
-          renderText(); cooldown = now + 500; stableTok = null; document.getElementById("bar").style.width = "0%";
+          renderText();
+          cooldown = now + 500;
+          stableTok = null;
+          document.getElementById("bar").style.width = "0%";
         }
-      } else { stableTok = label; stableStart = now; }
+      } else {
+        stableTok = label;
+        stableStart = now;
+      }
     } else {
       stableTok = null;
-      document.getElementById("bar").style.width = `${Math.round(conf*40)}%`;
+      document.getElementById("bar").style.width = `${Math.round(conf * 40)}%`;
       document.getElementById("bar").style.background = "#f59e0b";
-      document.getElementById("sub").textContent = `${Math.round(conf*100)}% — hold steady`;
+      document.getElementById("sub").textContent = `${Math.round(conf * 100)}% — hold steady`;
     }
-  } finally { busy = false; }
+  } finally {
+    busy = false;
+  }
 }
 
 function loop(ts) {
   const w = canvas.width, h = canvas.height;
-  offCtx.save(); offCtx.translate(w, 0); offCtx.scale(-1, 1); offCtx.drawImage(video, 0, 0, w, h); offCtx.restore();
+  offCtx.save();
+  offCtx.translate(w, 0);
+  offCtx.scale(-1, 1);
+  offCtx.drawImage(video, 0, 0, w, h);
+  offCtx.restore();
   ctx.drawImage(off, 0, 0, w, h);
   const hRes = handLM.detectForVideo(off, ts);
   if (hRes.landmarks?.length) {
+    hRes.landmarks.forEach((lms, idx) => drawHand(lms, w, h, idx));
     const lms = hRes.landmarks[0];
-    drawHand(lms, w, h);
     const now = performance.now();
     const dyn = now > cooldown ? checkJZ(lms) : null;
     if (dyn) {
-      outText += dyn; renderText(); cooldown = now + 700; stableTok = null; probBuf = [];
+      outText += dyn;
+      renderText();
+      cooldown = now + 700;
+      stableTok = null;
+      probBuf = [];
       document.getElementById("sign").textContent = dyn;
       document.getElementById("sub").textContent = `Motion "${dyn}" locked`;
       document.getElementById("bar").style.width = "100%";
@@ -215,7 +471,8 @@ function loop(ts) {
       predict(extractGeom(lms));
     }
   } else {
-    probBuf = []; stableTok = null;
+    probBuf = [];
+    stableTok = null;
     document.getElementById("sign").textContent = "WAITING";
     document.getElementById("sub").textContent = "Show hand to spell";
     document.getElementById("bar").style.width = "0%";
