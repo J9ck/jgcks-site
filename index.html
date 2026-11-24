@@ -69,7 +69,7 @@
             gap: 20px;
             width: 95vw;
             max-width: 1600px;
-            height: 85vh;
+            height: calc(100vh - 100px);
             position: relative;
             z-index: 10;
             opacity: 0; /* Hidden until boot finishes */
@@ -353,10 +353,30 @@
         <div class="panel" id="panel-left">
             <div class="panel-header">
                 <span>PROJECT_DB</span>
-                <span>V2.5</span>
+                <span>V2.6</span>
             </div>
             <div class="panel-content">
                 <h2>ACTIVE_APPS</h2>
+
+                <!-- NEW APP SLOT: uncomment and fill in once the App Store link is live
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>APP_NAME</h3>
+                        <span class="tag">iOS APP</span>
+                    </div>
+                    <p>One-line pitch.</p>
+                    <a href="APP_STORE_URL" target="_blank" rel="noopener" class="btn">APP STORE</a>
+                </div>
+                -->
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>ASL_VISION</h3>
+                        <span class="tag">COMPUTER VISION</span>
+                    </div>
+                    <p>Real-time ASL translator running in the browser at ~30 FPS, deployed on AWS. MediaPipe tracks hands, pose, and facial expression; a PyTorch Conformer model recognizes 250 signs, with a motion-tracked Letters mode for J and Z. Translates the sign stream into natural English and reads it aloud.</p>
+                    <a href="https://asl.jgcks.com" target="_blank" rel="noopener" class="btn">LAUNCH</a>
+                </div>
 
                 <div class="card">
                     <div style="display:flex; justify-content:space-between;">
@@ -424,7 +444,7 @@
                         <h3>BIO_HACKING</h3>
                         <span class="tag">HARDWARE</span>
                     </div>
-                    <p>Dangerous Things xSIID + NExT + xG3 implants. NFC/RFID protocols, iOS automation triggers, and SSH keys. Research started into a four thieves vinegar collective PegLeg & PirateBox clone.</p>
+                    <p>Dangerous Things xSIID + NExT + xG3 implants. NFC/RFID protocols, iOS automation triggers, and SSH keys. Research started into a four thieves vinegar collective PegLeg &amp; PirateBox clone.</p>
                 </div>
 
                 <div class="card" style="height: 400px; display: flex; flex-direction: column; padding: 0; background: #000; border: 1px solid #222; overflow: hidden; margin-top: 20px;">
@@ -448,7 +468,7 @@
                 <div class="profile-scan"></div>
 
                 <h1>JACK DOYLE</h1>
-                <span class="subtitle">CS & AI UNDERGRAD // CYBERSECURITY</span>
+                <span class="subtitle">CS &amp; AI UNDERGRAD // CYBERSECURITY</span>
 
                 <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-left: 2px solid var(--primary); margin: 20px 0;">
                     <p style="margin: 0; color: #fff;">
@@ -473,7 +493,7 @@
                 <div style="text-align: left; margin-bottom: 20px;">
                     <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px;">CAPABILITIES</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">PYTORCH / HUGGINGFACE</div>
+                        <div class="tech-item">PYTORCH / MEDIAPIPE / HF</div>
                         <div class="tech-item">AWS / DOCKER / K8S</div>
                         <div class="tech-item">PYTHON / C++ / SQL</div>
                         <div class="tech-item">WIRESHARK / NMAP</div>
@@ -485,9 +505,21 @@
                 </div>
 
                 <div style="text-align: left; margin-bottom: 20px;">
+                    <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px;">SERVICES // FREELANCE</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">WEB DESIGN</div>
+                        <div class="tech-item">WEB DEVELOPMENT</div>
+                        <div class="tech-item">NETWORK SUPPORT</div>
+                        <div class="tech-item">CYBERSECURITY</div>
+                        <div class="tech-item">SOFTWARE TESTING</div>
+                        <div class="tech-item">HOME NETWORKING</div>
+                    </div>
+                </div>
+
+                <div style="text-align: left; margin-bottom: 20px;">
                     <h3 style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">EDUCATION</h3>
                     <p style="margin-bottom: 5px; color: #fff;">RHODE ISLAND COLLEGE</p>
-                    <p style="font-size: 0.7rem;">Double Major: Computer Science & AI<br>Minor: Cybersecurity (Expected May 2027)</p>
+                    <p style="font-size: 0.7rem;">Double Major: Computer Science &amp; AI<br>Minor: Cybersecurity (Expected May 2027)</p>
 
                     <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
                         <h4 style="color: #fff; font-size: 0.7rem; margin: 0 0 8px 0;">HONORS // PUBLICATIONS</h4>
@@ -497,7 +529,7 @@
                                 <span style="color: var(--primary);">2026</span>
                             </li>
                             <li class="log-item">
-                                <span>KENTUCKY COLONEL COMMISSION</span>
+                                <span>COMMISSIONED KENTUCKY COLONEL</span>
                                 <span style="color: var(--primary);">2026</span>
                             </li>
                             <li class="log-item">
@@ -544,45 +576,21 @@
                 <h2>TIMELINE</h2>
 
                 <div class="timeline-item">
+                    <span class="date">SEP 2026 - PRESENT</span>
+                    <h3>TREASURER</h3>
+                    <p>Anchor Television, Rhode Island College. Treasurer of the student television organization.</p>
+                </div>
+
+                <div class="timeline-item">
                     <span class="date">AUG 2026 - PRESENT</span>
-                    <h3>DATA & SYSTEMS DEVELOPER</h3>
-                    <p>Skills for Rhode Island's Future. Building the PrepareRI platform in Microsoft Dataverse, Power Apps, Power Automate, and Power BI for 1,200+ applications. Contributing to the RI AI Task Force.</p>
+                    <h3>DATA &amp; SYSTEMS DEVELOPER</h3>
+                    <p>Skills for Rhode Island's Future. Building and managing the PrepareRI platform in Microsoft Dataverse and Power Apps, processing 1,200+ applications from intake to enrollment. Automating records with Power Automate, FormAssembly, and SharePoint, with role-based access and Dev/Production managed solutions. Supporting Springpod career challenges (~150 students) with live leaderboards, building Power BI dashboards, and contributing to the RI AI Task Force alongside Microsoft.</p>
                 </div>
 
                 <div class="timeline-item">
                     <span class="date">JAN 2026 - AUG 2026</span>
                     <h3>PREPARERI FELLOW</h3>
-                    <p>Skills for Rhode Island's Future (AmeriCorps). Built Python Slack bots for $27,500+ scholarship leaderboards, advised the RI State AI Task Force, and deployed Small Business Hub storefronts.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">AUG 2025 - PRESENT</span>
-                    <h3>TEACHING ASSISTANT (BUS-100)</h3>
-                    <p>Rhode Island College. Mentoring 124+ first-year students across corporate partnership consulting projects and executive presentations.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">AUG 2023 - PRESENT</span>
-                    <h3>WEBMASTER</h3>
-                    <p>90.7 WXIN & The Anchor Newspaper. Designing and maintaining campus media platforms, live streaming integrations, and site security.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">APR 2024 - PRESENT</span>
-                    <h3>WEB DEVELOPER</h3>
-                    <p>Freelance. Full stack development, UX/UI design, DNS/SSL configuration, and ADA-compliant solutions for campus and local clients.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">AUG 2022 - PRESENT</span>
-                    <h3>PRODUCTION MANAGER</h3>
-                    <p>90.7 WXIN. Managing broadcast infrastructure and FCC compliance. Leading studio hardware, technology committee, and streaming pipelines.</p>
-                </div>
-
-                <div class="timeline-item">
-                    <span class="date">JAN 2023 - MAY 2026</span>
-                    <h3>HR CLERICAL ASSISTANT</h3>
-                    <p>Rhode Island College. Managed confidential employee records, onboarding workflows, and data integrity across internal HR systems.</p>
+                    <p>Skills for Rhode Island's Future (AmeriCorps). Built Python Slack bots with automated scoring tracking $27,500+ in scholarships and incentives (including Springpod integrations), advised the RI State AI Task Force on student AI use and ethics, launched Shopify storefronts for the Small Business Hub, and ran technical setup for events supporting 200+ high school juniors.</p>
                 </div>
 
                 <div class="timeline-item">
@@ -592,15 +600,57 @@
                 </div>
 
                 <div class="timeline-item">
-                    <span class="date">OCT 2024 - JAN 2026</span>
-                    <h3>COMMITTEE MEMBER</h3>
-                    <p>Rhode Island College (Science & Tech). Academic Technology Advisory Committee (ATAC) and Ad Hoc Website Committee.</p>
+                    <span class="date">SEP 2025 - JAN 2026</span>
+                    <h3>DEPUTY SPEAKER</h3>
+                    <p>Student Community Government, Inc. Led the Managing Conditions &amp; Services Committee, organized town halls, analyzed student survey data, and served on the SCG Executive Board.</p>
                 </div>
 
                 <div class="timeline-item">
-                    <span class="date">2025 - 2026</span>
-                    <h3>DEPUTY SPEAKER</h3>
-                    <p>Student Community Government. Leadership role managing parliamentary procedure and student advocacy.</p>
+                    <span class="date">AUG 2025 - PRESENT</span>
+                    <h3>TEACHING ASSISTANT (BUS-100)</h3>
+                    <p>Rhode Island College. Mentoring 124+ first-year students through semester-long corporate partnership projects (including Citizens Bank), ending in executive presentations and recruitment events with industry stakeholders.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">AUG 2025 - PRESENT</span>
+                    <h3>WEBMASTER</h3>
+                    <p>The Anchor Newspaper &amp; Anchor TV. Web design and maintenance for both student media organizations.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">OCT 2024 - JAN 2026</span>
+                    <h3>MEMBER OF PARLIAMENT</h3>
+                    <p>Student Community Government, Inc. Represented students on ATAC, Conditions &amp; Services, Public Relations, Donovan Dining Center, and Ad Hoc Website Advisory committees.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">APR 2024 - PRESENT</span>
+                    <h3>WEB DEVELOPER</h3>
+                    <p>Freelance. Built the official 90.7 WXIN and SCG sites: front-end and UX/UI, real-time streaming, CMS, secure document hosting, event calendars, DNS/SSL/CDN configuration, ADA compliance, and SEO.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">AUG 2023 - PRESENT</span>
+                    <h3>WEBMASTER</h3>
+                    <p>90.7 WXIN. Contract web design and maintenance for the station platform, including live streaming integration and site security.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">JAN 2023 - MAY 2026</span>
+                    <h3>HUMAN RESOURCES ASSISTANT</h3>
+                    <p>Rhode Island College, Office of Human Resources. Maintained confidential employee records under data-privacy policy, supported onboarding, and streamlined filing and task tracking.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">AUG 2022 - PRESENT</span>
+                    <h3>PRODUCTION MANAGER</h3>
+                    <p>90.7 WXIN. Oversee audio production, studio equipment, and FCC compliance. Lead the technology and podcasting committees and train new members.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="date">OCT 2020 - MAR 2026</span>
+                    <h3>CUSTOMER SERVICE ADVISOR // PRODUCT FLOW SPECIALIST</h3>
+                    <p>Best Buy. Customer Service Advisor in Nashua, NH, then seasonal Product Flow Specialist in Manchester, NH.</p>
                 </div>
             </div>
             <div class="decorative-corner"></div>
@@ -610,6 +660,14 @@
     <div class="system-footer">
         SYS_ID: JGCKS_MAIN // <span id="clock">00:00:00</span> // ACCESS GRANTED
     </div>
+
+    <!-- Clock runs in its own plain script so it works even if the AI module fails to load -->
+    <script>
+        const clockEl = document.getElementById('clock');
+        const tick = () => { clockEl.textContent = new Date().toLocaleTimeString('en-US', { hour12: false }); };
+        tick();
+        setInterval(tick, 1000);
+    </script>
 
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
@@ -626,6 +684,7 @@
             "LOADING MODULE: IMPLANT_NEXT... [CONNECTED]",
             "ESTABLISHING SECURE CONNECTION TO 90.7 WXIN...",
             "SYNCING GITHUB REPOS... [16 FOUND]",
+            "LOADING MODULE: ASL_VISION... [ONLINE]",
             "LOADING AI NEURAL INTERFACE...",
             "USER IDENTITY VERIFIED: JACK DOYLE",
             "WELCOME BACK, VISITOR."
@@ -697,7 +756,11 @@ Candidate Profile:
 - Former PrepareRI AmeriCorps Fellow who built Python Slack leaderboard bots tracking $27,500+ in scholarships.
 - Teaching Assistant for BUS-100 at Rhode Island College mentoring 124+ students on corporate consulting projects.
 - Ships production iOS apps (Romindr, Cashin') and autonomous AI agents ("Scraps" OpenClaw wrapper on bare-metal macOS).
+- Built ASL Vision (asl.jgcks.com), a real-time browser-based ASL translator deployed on AWS: MediaPipe hand, pose, and face tracking feeding a PyTorch Conformer model that recognizes 250 signs at ~30 FPS in Chrome.
 - Production Manager at 90.7 WXIN and Webmaster for WXIN, SCG, and The Anchor Newspaper.
+- Treasurer of Anchor Television and Webmaster for The Anchor Newspaper at Rhode Island College.
+- Supports Springpod career exploration challenges (~150 students) and ran technical setup for PrepareRI events serving 200+ high school juniors.
+- Commissioned Kentucky Colonel (June 2026) and Fall 2025 Dean's List.
 - Operates a 30TB multi-OS home lab and designs NFC/RFID bio-implant hardware integrations (xSIID, NExT, xG3).
 
 Rules:
